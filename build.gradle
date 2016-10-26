@@ -1,0 +1,37 @@
+plugins {
+    id 'groovy'
+    id 'java-gradle-plugin'
+    id 'maven-publish'
+    id 'com.jfrog.bintray' version '1.7'
+    id 'org.unbroken-dome.test-sets' version '1.2.0'
+}
+
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+
+testSets {
+    integrationTest { dirName = 'integration-test' }
+}
+
+gradlePlugin {
+    testSourceSets project.sourceSets.integrationTest
+}
+
+
+dependencies {
+    compile gradleApi()
+
+    compile 'com.sun.xml.bind:jaxb-core:2.2.11'
+    compile 'com.sun.xml.bind:jaxb-impl:2.2.11'
+    compile 'com.sun.xml.bind:jaxb-xjc:2.2.11'
+
+    testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
+        exclude group: 'org.codehaus.groovy', module: 'groovy-all'
+    }
+    testCompile 'org.hamcrest:java-hamcrest:2.0.0.0'
+}
+
+
+apply from: "$rootDir/publishing.gradle"
