@@ -88,3 +88,22 @@ project.plugins.withId('com.jfrog.bintray') {
 
     tasks['release'].dependsOn tasks.bintrayUpload
 }
+
+
+project.plugins.withId('com.gradle.plugin-publish') {
+    pluginBundle {
+        website = project.home_url
+        vcsUrl = project.scm_url
+        description = project.description
+        tags = project.bintray_labels.split ','
+
+        plugins {
+            xjcPlugin {
+                id = 'org.unbroken-dome.xjc'
+                displayName = 'Gradle XJC Plugin'
+            }
+        }
+    }
+
+    tasks['release'].dependsOn tasks.publishPlugins
+}
