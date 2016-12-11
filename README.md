@@ -55,6 +55,12 @@ The parameters to the `xjcGenerate` task correspond to the parameters to the
 | `episodes` | `File` | | all modules in the `xjcEpisode` configuration |
 | `targetPackage` | `String` | `-p` | not set |
 
+Additionally, the following parameter may be used to control the output code generation:
+
+| Parameter | Type | Description | Default value |
+|---|---|---|---|
+| `encoding` | `String` | Encoding for generated Java files | `UTF-8` |
+
 
 ## Including Generated Code in the Compilation
 

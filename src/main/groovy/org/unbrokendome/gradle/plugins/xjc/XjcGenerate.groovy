@@ -40,6 +40,8 @@ class XjcGenerate extends SourceTask {
     boolean enableIntrospection = false
     @Input
     boolean contentForWildcard = false
+    @Input
+    String encoding = 'UTF-8'
 
     @OutputFile @Optional
     File episodeTargetFile
@@ -95,6 +97,7 @@ class XjcGenerate extends SourceTask {
         options.enableIntrospection = enableIntrospection
         options.contentForWildcard = contentForWildcard
         options.defaultPackage = targetPackage
+        options.encoding = encoding
 
         if (extension) {
             options.compatibilityMode = Options.EXTENSION
