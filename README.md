@@ -43,6 +43,17 @@ The parameters to the `xjcGenerate` task correspond to the parameters to the
  the Gradle constructs (e.g. source sets) where it is more comfortable. The following table lists some common parameters
  to the `xjcGenerate` task.
  
+### Example
+
+```groovy
+xjcGenerate {
+    source = fileTree('src/main/schema') { include '*.xsd' }
+    bindingFiles = fileTree('src/main/jaxb') { include '*.xjb' }
+    catalogs = fileTree('src/main/catalog') { include '*.cat' }
+}
+```
+
+ 
 ### Common Parameters
  
 | Parameter | Type | Command-line equivalent | Default / convention value |
@@ -50,7 +61,7 @@ The parameters to the `xjcGenerate` task correspond to the parameters to the
 | `source` | `FileTree` | | all `*.xsd` files under `src/main/schema` |
 | `bindingFiles` | `FileCollection` | `-b` | all `*.xjb` files under `src/main/schema` |
 | `outputDirectory` | `File` | `-d` | `build/xjc/generated-sources` |
-| `extension` | `boolean` | `-extension` | `false` |
+
 
 ### Additional Parameters
 
@@ -65,6 +76,7 @@ The following parameters are used less commonly, to fine-tune the generation pro
 | `classpath` | `FileCollection` | `-classpath` | all modules in the `xjcClasspath` configuration |
 | `episodes` | `File` | | all modules in the `xjcEpisode` configuration |
 | `episodeTargetFile` | `File` | `-episode` | `build/xjc/sun-jaxb.episode` |
+| `extension` | `boolean` | `-extension` | `false` |
 | `packageLevelAnnotations` | `boolean` | `-npa` (`true` if not present) | `true` |
 | `quiet` | `boolean` | `-quiet` | `false` |
 | `readOnly` | `boolean` | `-readOnly` | `false` |
@@ -72,7 +84,6 @@ The following parameters are used less commonly, to fine-tune the generation pro
 | `targetPackage` | `String` | `-p` | not set |
 | `targetVersion` | `String` | `-target` | use latest version  |
 | `verbose` | `boolean` | `-verbose` | `false` |
-
 
 Additionally, the following parameter may be used to control the output code generation:
 
@@ -136,8 +147,8 @@ xjcGenerate {
 }
 ```
 
-The plugin will automatically use the `extension` mode if there are parameters starting with `-X`
- present.
+The plugin will automatically use the JAXB extension mode if there are parameters starting with `-X`
+ present, regardless of the `extension` flag.
 
 
 ## Using Episodes
