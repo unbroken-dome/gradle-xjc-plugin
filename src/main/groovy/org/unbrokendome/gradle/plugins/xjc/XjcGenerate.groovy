@@ -109,7 +109,7 @@ class XjcGenerate extends SourceTask {
         options.quiet = quiet
         options.verbose = verbose
 
-        if (extension) {
+        if (extension || extraArgs?.any { it.startsWith('-X')}) {
             options.compatibilityMode = Options.EXTENSION
         }
 

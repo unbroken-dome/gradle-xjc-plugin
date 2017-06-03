@@ -136,6 +136,9 @@ xjcGenerate {
 }
 ```
 
+The plugin will automatically use the `extension` mode if there are parameters starting with `-X`
+ present.
+
 
 ## Using Episodes
 
