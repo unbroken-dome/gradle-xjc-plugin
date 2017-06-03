@@ -39,7 +39,7 @@ Just by applying the plugin, your project will now a task named `xjcGenerate` wi
  work for you, then you can just run `gradle build` and the `xjc` tool will run and generate code for you.
 
 The parameters to the `xjcGenerate` task correspond to the parameters to the
- [`xjc` command line tool](https://jaxb.java.net/2.2.4/docs/xjc.html), but use
+ [`xjc` command line tool](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/xjc.html), but use
  the Gradle constructs (e.g. source sets) where it is more comfortable. The following table lists some common parameters
  to the `xjcGenerate` task.
  
