@@ -42,6 +42,13 @@ class XjcGenerate extends SourceTask {
     boolean contentForWildcard = false
     @Input
     String encoding = 'UTF-8'
+    @Input
+    boolean readOnly = false
+    @Console
+    boolean quiet = false
+    @Console
+    boolean verbose = false
+
 
     @OutputFile @Optional
     File episodeTargetFile
@@ -98,6 +105,9 @@ class XjcGenerate extends SourceTask {
         options.contentForWildcard = contentForWildcard
         options.defaultPackage = targetPackage
         options.encoding = encoding
+        options.readOnly = readOnly
+        options.quiet = quiet
+        options.verbose = verbose
 
         if (extension) {
             options.compatibilityMode = Options.EXTENSION
