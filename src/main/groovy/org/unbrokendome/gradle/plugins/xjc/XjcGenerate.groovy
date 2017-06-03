@@ -9,7 +9,12 @@ import com.sun.tools.xjc.util.ErrorReceiverFilter
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.*
 
+import java.util.regex.Pattern
+
+
 class XjcGenerate extends SourceTask {
+
+    private static final Pattern LOCALE_PATTERN = ~/(?<language>\p{Alpha}{2,3})(-(?<region>\p{Alpha}{2}|\d{3}))?/
 
     @OutputDirectory
     File outputDirectory
@@ -59,6 +64,31 @@ class XjcGenerate extends SourceTask {
     @Input @Optional
     String targetPackage
 
+    private Locale docLocale
+
+
+    @Input @Optional
+    String getDocLanguage() {
+        docLocale?.toString()
+    }
+
+
+    void setDocLanguage(String language) {
+        if (language != null) {
+            def matcher = LOCALE_PATTERN.matcher(language)
+            if (matcher.matches()) {
+                def matchedLanguage = matcher.group('language')
+                def matchedRegion = matcher.group('region')
+                docLocale = matchedRegion != null ? new Locale(matchedLanguage, matchedRegion) : new Locale(matchedLanguage)
+            } else {
+                throw new IllegalArgumentException("\"$language\" is not a valid Locale specifier")
+            }
+
+        } else {
+            docLocale = null
+        }
+    }
+
 
     @TaskAction
     void generateCode() {
@@ -68,20 +98,33 @@ class XjcGenerate extends SourceTask {
         def listener = new LoggingXjcListener(logger)
         def errorReceiver = new ErrorReceiverFilter(listener)
 
-        def model = ModelLoader.load(options, new JCodeModel(), errorReceiver)
-        if (model == null) {
-            throw new Exception('Parse failed')
+        Locale oldLocale = null
+        if (docLocale && docLocale != Locale.default) {
+            oldLocale = Locale.default
+            Locale.default = docLocale
         }
+        try {
 
-        def outline = model.generateCode(options, errorReceiver)
-        if (outline == null) {
-            throw new Exception('Code generation failed')
+            def model = ModelLoader.load(options, new JCodeModel(), errorReceiver)
+            if (model == null) {
+                throw new Exception('Parse failed')
+            }
+
+            def outline = model.generateCode(options, errorReceiver)
+            if (outline == null) {
+                throw new Exception('Code generation failed')
+            }
+
+            listener.compiled(outline)
+
+            def codeWriter = options.createCodeWriter()
+            model.codeModel.build(codeWriter)
+
+        } finally {
+            if (oldLocale) {
+                Locale.default = oldLocale
+            }
         }
-
-        listener.compiled(outline)
-
-        def codeWriter = options.createCodeWriter()
-        model.codeModel.build(codeWriter)
     }
 
 

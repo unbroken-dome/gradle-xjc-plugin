@@ -90,6 +90,7 @@ Additionally, the following parameter may be used to control the output code gen
 | Parameter | Type | Description | Default value |
 |---|---|---|---|
 | `encoding` | `String` | Encoding for generated Java files | `UTF-8` |
+| `docLanguage` | `String` | Desired language for Javadoc comments in generated code (e.g. `"en-US"`) | JVM's default `Locale` | 
 
 
 ## Including Generated Code in the Compilation
