@@ -21,6 +21,11 @@ gradlePlugin {
 }
 
 
+repositories {
+    jcenter()
+}
+
+
 dependencies {
     compile gradleApi()
 
