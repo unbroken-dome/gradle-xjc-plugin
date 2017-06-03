@@ -43,17 +43,36 @@ The parameters to the `xjcGenerate` task correspond to the parameters to the
  the Gradle constructs (e.g. source sets) where it is more comfortable. The following table lists some common parameters
  to the `xjcGenerate` task.
  
+### Common Parameters
+ 
 | Parameter | Type | Command-line equivalent | Default / convention value |
 |---|---|---|---|
 | `source` | `FileTree` | | all `*.xsd` files under `src/main/schema` |
 | `bindingFiles` | `FileCollection` | `-b` | all `*.xjb` files under `src/main/schema` |
-| `catalogs` | `FileCollection` | `-catalog` | not set |
 | `outputDirectory` | `File` | `-d` | `build/xjc/generated-sources` |
+| `extension` | `boolean` | `-extension` | `false` |
+
+### Additional Parameters
+
+The following parameters are used less commonly, to fine-tune the generation process or
+ in special scenarios. Please refer to the
+ [`xjc` command line tool](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/xjc.html)
+ documentation for their exact meaning.
+
+| Parameter | Type | Command-line equivalent | Default / convention value |
+|---|---|---|---|
+| `catalogs` | `FileCollection` | `-catalog` | not set |
 | `classpath` | `FileCollection` | `-classpath` | all modules in the `xjcClasspath` configuration |
-| `targetVersion` | `String` | `-target` | use latest version  |
-| `episodeTargetFile` | `File` | `-episode` | `build/xjc/sun-jaxb.episode` |
 | `episodes` | `File` | | all modules in the `xjcEpisode` configuration |
+| `episodeTargetFile` | `File` | `-episode` | `build/xjc/sun-jaxb.episode` |
+| `packageLevelAnnotations` | `boolean` | `-npa` (`true` if not present) | `true` |
+| `quiet` | `boolean` | `-quiet` | `false` |
+| `readOnly` | `boolean` | `-readOnly` | `false` |
+| `strictCheck` | `boolean` | `-nv` (`true` if not present) | `true` | 
 | `targetPackage` | `String` | `-p` | not set |
+| `targetVersion` | `String` | `-target` | use latest version  |
+| `verbose` | `boolean` | `-verbose` | `false` |
+
 
 Additionally, the following parameter may be used to control the output code generation:
 
