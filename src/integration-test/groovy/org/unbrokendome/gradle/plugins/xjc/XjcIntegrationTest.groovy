@@ -44,6 +44,7 @@ class XjcIntegrationTest extends Specification {
                     .withProjectDir(testProjectDir.root)
                     .withPluginClasspath()
                     .withArguments('xjc', '--stacktrace')
+                    .withDebug(true)
                     .build()
             def generatedFiles = new File(testProjectDir.root, 'build/xjc/generated-sources/generated').listFiles()*.name
 
