@@ -37,10 +37,13 @@ class XjcPlugin implements Plugin<Project> {
         xjcTask.source = project.fileTree('src/main/schema') { include '*.xsd' }
         xjcTask.bindingFiles = project.fileTree('src/main/schema') { include '*.xjb' }
         xjcTask.episodes = project.configurations.create XJC_EPISODE_CONFIGURATION_NAME
-        xjcTask.classpath = project.configurations.create XJC_CLASSPATH_CONFIGURATION_NAME
+        xjcTask.pluginClasspath = project.configurations.create XJC_CLASSPATH_CONFIGURATION_NAME
         xjcTask.conventionMapping.with {
             map('outputDirectory') { project.file("${project.buildDir}/xjc/generated-sources") }
             map('episodeTargetFile') { project.file("${project.buildDir}/xjc/sun-jaxb.episode") }
+            map('catalogResolutionClasspath') {
+                project.configurations.findByName('compileClasspath') ?: project.configurations.findByName('compile')
+            }
         }
         xjcTask
     }

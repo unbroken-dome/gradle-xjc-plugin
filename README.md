@@ -71,17 +71,23 @@ The following parameters are used less commonly, to fine-tune the generation pro
 | Parameter | Type | Command-line equivalent | Default / convention value |
 |---|---|---|---|
 | `catalogs` | `FileCollection` | `-catalog` | not set |
-| `classpath` | `FileCollection` | `-classpath` | all modules in the `xjcClasspath` configuration |
 | `episodes` | `File` | | all modules in the `xjcEpisode` configuration |
 | `episodeTargetFile` | `File` | `-episode` | `build/xjc/sun-jaxb.episode` |
 | `extension` | `boolean` | `-extension` | `false` |
 | `packageLevelAnnotations` | `boolean` | `-npa` (`true` if not present) | `true` |
+| `pluginClasspath` | `FileCollection` | `-classpath` | all modules in the `xjcClasspath` configuration |
 | `quiet` | `boolean` | `-quiet` | `false` |
 | `readOnly` | `boolean` | `-readOnly` | `false` |
 | `strictCheck` | `boolean` | `-nv` (`true` if not present) | `true` | 
 | `targetPackage` | `String` | `-p` | not set |
 | `targetVersion` | `String` | `-target` | use latest version  |
 | `verbose` | `boolean` | `-verbose` | `false` |
+
+The following parameter is specific to the Gradle plugin and has no command-line equivalent:
+
+| Parameter | Type | Description | Default value |
+|---|---|---|---|
+| `catalogResolutionClasspath` | `Configuration` | Where to look for imported schemas when using the `maven:` or `classpath:` URI scheme in catalogs (see below) | `compileClasspath` (`compile` in older Gradle versions) |
 
 Additionally, the following parameter may be used to control the output code generation:
 
@@ -171,11 +177,11 @@ dependencies {
 These dependencies should resolve to JAR files; if they contain a `META-INF/sun-jaxb.episode` entry it will be
  imported by the current `xjc` invocation.
  
-Of course, you may use a different configuration, like `compile`, as the source of episode JARs:
+Of course, you may use a different configuration, like `compileClasspath`, as the source of episode JARs:
 
 ```groovy
 xjcGenerate {
-    episodes compile
+    episodes compileClasspath
 }
 ```
 
@@ -192,3 +198,84 @@ xjc {
 ```
 
 which would place the episode file under `META-INF/sun-jaxb.episode` in the JAR.
+
+
+## Working with Catalogs
+
+Catalogs can be used to map the URI of an imported schema (specified using `<xsd:import>`) to an actual URL or file
+ from where it can be read. This is especially useful if the imported URI is only symbolic, or you cannot
+ (or do not want to) change the importing schema.
+ 
+To use a catalog, first specify the location of the catalog file(s) in the `XjcGenerate` task configuration,
+ for example:
+
+```groovy
+xjcGenerate {
+    catalogs = fileTree('src/main/catalog') { include '*.cat' }
+}
+```
+
+In the catalog file you can use the `REWRITE_SYSTEM` instruction to map an URI to the actual location of the schema,
+ e.g.
+ 
+```text
+REWRITE_SYSTEM "http://schemas.example.com" "http://www.example.com/etc/schemas/"
+```
+
+### The `classpath:` and `maven:` URI Schemes
+
+This plugin supports two special URI schemes in catalogs, the `classpath:` and `maven:` scheme. They are inspired
+ (and largely compatible) with the [JAXB2 Maven Plugin](https://github.com/highsource/maven-jaxb2-plugin), in order
+ to simplify a migration from Maven to Gradle in projects that use XJC code generation.
+
+The `classpath:` interprets the rest of the URI as the path to a classpath resource. This is especially useful for
+ multi-step code generation where a library JAR contains the schema, an episode file and generated code:
+ 
+```groovy
+// build.gradle
+
+dependencies {
+    implementation 'com.example:my-model:1.2.3'
+}
+
+xjcGenerate {
+    episodes compileClasspath         // compileClasspath includes all "implementation" dependencies
+    
+}
+```
+
+And assuming that the `my-model` JAR contains an XSD resource at `schemas/my-model.xsd`, you could write
+the catalog file as follows:
+
+```text
+# catalog file
+REWRITE_SYSTEM "http://schemas.example.com/" "classpath:schemas/"
+```
+
+And then reference it in the importing schema:
+
+```xml
+<!-- The schemaLocation will be mapped to the JAR classpath resource thanks to the catalog -->
+<xsd:import namespace="http://schemas.example.com/mymodel"
+            schemaLocation="http://schemas.example.com/my-model.xsd" />
+```
+
+By default, all JARs in the
+ `compileClasspath` configuration are taken into account, but you can use a custom configuration by setting the
+ `catalogResolutionClasspath` property on the `XjcGenerate` task.
+ 
+
+The `maven:` scheme works similar to the `classpath:` scheme, but allows you to specify additional Maven coordinates
+ to filter the dependency. The syntax is (without spaces)
+ 
+```text
+maven:<groupId>:<artifactId>:<extension>:<classifier>:<version>!path/to/resource
+```
+
+where all parts are optional, and trailing colons may be omitted.
+
+Note that in contrast to the Maven JAXB2 Plugin, the dependency isn't resolved ad-hoc: it must still be
+ listed in your Gradle build script.
+
+You can think of the `maven:` scheme as an extension to `classpath:` with a filter for the JARs to be searched
+ for resources. (In fact, `classpath:` is defined as an alias for `maven::!`.) 

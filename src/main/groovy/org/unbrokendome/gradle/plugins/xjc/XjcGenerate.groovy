@@ -1,16 +1,21 @@
 package org.unbrokendome.gradle.plugins.xjc
 
 import com.sun.codemodel.JCodeModel
+import com.sun.org.apache.xml.internal.resolver.CatalogManager
+import com.sun.org.apache.xml.internal.resolver.tools.CatalogResolver
 import com.sun.tools.xjc.Language
 import com.sun.tools.xjc.ModelLoader
 import com.sun.tools.xjc.Options
 import com.sun.tools.xjc.api.SpecVersion
 import com.sun.tools.xjc.util.ErrorReceiverFilter
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.*
+import org.unbrokendome.gradle.plugins.xjc.resolver.ClasspathUriResolver
+import org.unbrokendome.gradle.plugins.xjc.resolver.ExtensibleCatalogResolver
+import org.unbrokendome.gradle.plugins.xjc.resolver.MavenUriResolver
 
 import java.util.regex.Pattern
-
 
 class XjcGenerate extends SourceTask {
 
@@ -19,19 +24,28 @@ class XjcGenerate extends SourceTask {
     @OutputDirectory
     File outputDirectory
 
-    @InputFiles @Optional
+    @InputFiles
+    @Optional
     FileCollection bindingFiles
 
-    @InputFiles @Optional
+    @InputFiles
+    @Optional
     FileCollection catalogs
 
-    @InputFiles @Optional
+    @InputFiles
+    @Optional
     FileCollection episodes
 
-    @InputFiles @Optional
-    FileCollection classpath
+    @InputFiles
+    @Optional
+    FileCollection pluginClasspath
 
-    @Input @Optional
+    @InputFiles
+    @Optional
+    Configuration catalogResolutionClasspath
+
+    @Input
+    @Optional
     String targetVersion
     @Input
     boolean extension = false
@@ -55,21 +69,47 @@ class XjcGenerate extends SourceTask {
     boolean verbose = false
 
 
-    @OutputFile @Optional
+    @OutputFile
+    @Optional
     File episodeTargetFile
 
-    @Input @Optional
+    @Input
+    @Optional
     List<String> extraArgs
 
-    @Input @Optional
+    @Input
+    @Optional
     String targetPackage
 
     private Locale docLocale
 
 
-    @Input @Optional
+    @Input
+    @Optional
     String getDocLanguage() {
         docLocale?.toString()
+    }
+
+    /**
+     * Gets the plugin classpath.
+     *
+     * @return the classpath on which XJC looks for plugins
+     * @deprecated use {@link #getPluginClasspath()} instead
+     */
+    @Deprecated @Internal
+    FileCollection getClasspath() {
+        return pluginClasspath
+    }
+
+    /**
+     * Sets the plugin classpath.
+     *
+     * @param classpath the classpath on which XJC looks for plugins
+     * @deprecated use {@link #setPluginClasspath(FileCollection)} instead
+     */
+    @Deprecated @Internal
+    void setClasspath(FileCollection classpath) {
+        setPluginClasspath(classpath)
     }
 
 
@@ -129,16 +169,24 @@ class XjcGenerate extends SourceTask {
 
 
     private Options buildOptions() {
+
         def options = new Options()
 
         options.schemaLanguage = Language.XMLSCHEMA
         options.target = (targetVersion != null) ? SpecVersion.parse(targetVersion) : SpecVersion.LATEST
         options.targetDir = getOutputDirectory()
 
+        if (catalogs) {
+            def catalogResolver = createCatalogResolver()
+            catalogs.each {
+                catalogResolver.catalog.parseCatalog(it.absolutePath)
+            }
+            options.entityResolver = catalogResolver
+        }
+
         source?.each { options.addGrammar it }
         bindingFiles?.each { options.addBindFile it }
-        catalogs?.each { options.addCatalog it }
-        classpath?.each { options.classpaths.add it.toURI().toURL() }
+        pluginClasspath?.each { options.classpaths.add it.toURI().toURL() }
         episodes?.each { options.scanEpisodeFile it }
 
         options.strictCheck = strictCheck
@@ -152,7 +200,9 @@ class XjcGenerate extends SourceTask {
         options.quiet = quiet
         options.verbose = verbose
 
-        if (extension || extraArgs?.any { it.startsWith('-X')}) {
+        options.entityResolver
+
+        if (extension || extraArgs?.any { it.startsWith('-X') }) {
             options.compatibilityMode = Options.EXTENSION
         }
 
@@ -164,6 +214,17 @@ class XjcGenerate extends SourceTask {
             options.parseArguments(extraArgs as String[])
         }
 
-        options
+        return options
+    }
+
+
+    private CatalogResolver createCatalogResolver() {
+        def catalogManager = new CatalogManager()
+        catalogManager.ignoreMissingProperties = true
+        catalogManager.useStaticCatalog = false
+
+        return new ExtensibleCatalogResolver(catalogManager, project.logger,
+                ['maven'    : new MavenUriResolver(getCatalogResolutionClasspath(), project.logger),
+                 'classpath': new ClasspathUriResolver()])
     }
 }
