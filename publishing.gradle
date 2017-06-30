@@ -3,9 +3,10 @@ if (!gradle.startParameter.taskNames.contains('release')) {
     project.version += '-SNAPSHOT'
 }
 
-
-tasks.create('release') << {
-    println "Releasing $version"
+task release {
+    doLast {
+        println "Successfully released $version"
+    }
 }
 
 
@@ -28,11 +29,11 @@ project.plugins.withId('maven-publish') {
         from sourceSets.main.allSource
     }
 
-    tasks.create('javadocJar', Jar) {
-        description = 'Assembles a jar archive containing the javadocs.'
-        classifier = 'javadoc'
+    tasks.create('groovydocJar', Jar) {
+        description = 'Assembles a jar archive containing the groovydocs.'
+        classifier = 'groovydoc'
         group = 'build'
-        from tasks.javadoc
+        from tasks.groovydoc
     }
 
     project.publishing {
@@ -40,15 +41,7 @@ project.plugins.withId('maven-publish') {
             mavenJava(MavenPublication) {
                 from components.java
                 artifact tasks.sourcesJar
-                artifact tasks.javadocJar
-
-                pom.withXml {
-                    configurations.compile.resolvedConfiguration.firstLevelModuleDependencies.each { dep ->
-                        asNode().dependencies.dependency.find {
-                            it.artifactId.text() == dep.moduleName && it.groupId.text() == dep.moduleGroup
-                        }?.scope[0]?.value = 'compile'
-                    }
-                }
+                artifact tasks.groovydocJar
             }
         }
     }

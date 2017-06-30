@@ -27,16 +27,14 @@ repositories {
 
 
 dependencies {
-    compile gradleApi()
+    implementation 'com.sun.xml.bind:jaxb-core:2.2.11'
+    implementation 'com.sun.xml.bind:jaxb-impl:2.2.11'
+    implementation 'com.sun.xml.bind:jaxb-xjc:2.2.11'
 
-    compile 'com.sun.xml.bind:jaxb-core:2.2.11'
-    compile 'com.sun.xml.bind:jaxb-impl:2.2.11'
-    compile 'com.sun.xml.bind:jaxb-xjc:2.2.11'
-
-    testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
+    testImplementation('org.spockframework:spock-core:1.1-groovy-2.4') {
         exclude group: 'org.codehaus.groovy', module: 'groovy-all'
     }
-    testCompile 'org.hamcrest:java-hamcrest:2.0.0.0'
+    testImplementation 'org.hamcrest:java-hamcrest:2.0.0.0'
 }
 
 
