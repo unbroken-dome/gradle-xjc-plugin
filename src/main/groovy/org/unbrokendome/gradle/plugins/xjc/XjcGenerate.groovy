@@ -21,7 +21,6 @@ class XjcGenerate extends SourceTask {
 
     private static final Pattern LOCALE_PATTERN = ~/(?<language>\p{Alpha}{2,3})(-(?<region>\p{Alpha}{2}|\d{3}))?/
 
-    @OutputDirectory
     File outputDirectory
 
     @InputFiles
@@ -89,6 +88,14 @@ class XjcGenerate extends SourceTask {
     String getDocLanguage() {
         docLocale?.toString()
     }
+	
+	@OutputDirectory
+	File getPackageOutputDirectory() {
+		if(targetPackage == null)
+			return outputDirectory
+		else
+			return outputDirectory.toPath().resolve(targetPackage.replaceAll("\\.", java.util.regex.Matcher.quoteReplacement(java.io.File.separator))).toFile()
+	}
 
     /**
      * Gets the plugin classpath.
