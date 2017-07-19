@@ -14,6 +14,8 @@ import org.gradle.api.tasks.*
 import org.unbrokendome.gradle.plugins.xjc.resolver.ClasspathUriResolver
 import org.unbrokendome.gradle.plugins.xjc.resolver.ExtensibleCatalogResolver
 import org.unbrokendome.gradle.plugins.xjc.resolver.MavenUriResolver
+import java.util.regex.Matcher
+import java.io.File
 
 import java.util.regex.Pattern
 
@@ -88,14 +90,14 @@ class XjcGenerate extends SourceTask {
     String getDocLanguage() {
         docLocale?.toString()
     }
-	
-	@OutputDirectory
-	File getPackageOutputDirectory() {
-		if(targetPackage == null)
-			return outputDirectory
-		else
-			return outputDirectory.toPath().resolve(targetPackage.replaceAll("\\.", java.util.regex.Matcher.quoteReplacement(java.io.File.separator))).toFile()
-	}
+
+    @OutputDirectory
+    File getPackageOutputDirectory() {
+        if(targetPackage == null)
+            return outputDirectory
+        else
+            return outputDirectory.toPath().resolve(targetPackage.replaceAll("\\.", Matcher.quoteReplacement(File.separator))).toFile()
+    }
 
     /**
      * Gets the plugin classpath.
