@@ -14,6 +14,8 @@ import org.gradle.api.tasks.*
 import org.unbrokendome.gradle.plugins.xjc.resolver.ClasspathUriResolver
 import org.unbrokendome.gradle.plugins.xjc.resolver.ExtensibleCatalogResolver
 import org.unbrokendome.gradle.plugins.xjc.resolver.MavenUriResolver
+import java.util.regex.Matcher
+import java.io.File
 
 import java.util.regex.Pattern
 
@@ -21,7 +23,6 @@ class XjcGenerate extends SourceTask {
 
     private static final Pattern LOCALE_PATTERN = ~/(?<language>\p{Alpha}{2,3})(-(?<region>\p{Alpha}{2}|\d{3}))?/
 
-    @OutputDirectory
     File outputDirectory
 
     @InputFiles
@@ -88,6 +89,14 @@ class XjcGenerate extends SourceTask {
     @Optional
     String getDocLanguage() {
         docLocale?.toString()
+    }
+
+    @OutputDirectory
+    File getPackageOutputDirectory() {
+        if(targetPackage == null)
+            return outputDirectory
+        else
+            return outputDirectory.toPath().resolve(targetPackage.replaceAll("\\.", Matcher.quoteReplacement(File.separator))).toFile()
     }
 
     /**
