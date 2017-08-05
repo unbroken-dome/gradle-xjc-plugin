@@ -93,10 +93,13 @@ class XjcGenerate extends SourceTask {
 
     @OutputDirectory
     File getPackageOutputDirectory() {
-        if(targetPackage == null)
-            return outputDirectory
-        else
-            return outputDirectory.toPath().resolve(targetPackage.replaceAll("\\.", Matcher.quoteReplacement(File.separator))).toFile()
+        File baseOutputDirectory = getOutputDirectory()
+        if(targetPackage == null) {
+            return baseOutputDirectory
+        } else {
+            String targetPackagePath = targetPackage.replace('.' as char, File.separatorChar)
+            return baseOutputDirectory.toPath().resolve(targetPackagePath).toFile()
+        }
     }
 
     /**

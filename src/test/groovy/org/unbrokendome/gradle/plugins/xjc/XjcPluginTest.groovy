@@ -36,4 +36,34 @@ class XjcPluginTest extends Specification {
         then:
             project.tasks[XjcPlugin.XJC_GENERATE_TASK_NAME].outputDirectory != null
     }
+
+
+    def "packageOutputDirectory should be set to outputDirectory if targetPackage is not set"() {
+        when:
+            project.apply plugin: XjcPlugin
+
+        and:
+            project.evaluate()
+
+        then:
+            def xjcGenerateTask = project.tasks[XjcPlugin.XJC_GENERATE_TASK_NAME] as XjcGenerate
+            xjcGenerateTask.packageOutputDirectory == xjcGenerateTask.outputDirectory
+    }
+
+
+    def "packageOutputDirectory should be derived from outputDirectory + targetPackage if it is set"() {
+        when:
+            project.with {
+                apply plugin: XjcPlugin
+                xjcGenerate {
+                    targetPackage = 'com.example'
+                }
+            }
+        and:
+            project.evaluate()
+
+        then:
+            def xjcGenerateTask = project.tasks[XjcPlugin.XJC_GENERATE_TASK_NAME] as XjcGenerate
+            xjcGenerateTask.packageOutputDirectory == project.file("$project.buildDir/xjc/generated-sources/com/example")
+    }
 }
