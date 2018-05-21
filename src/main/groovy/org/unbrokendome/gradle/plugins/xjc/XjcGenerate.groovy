@@ -22,6 +22,7 @@ class XjcGenerate extends SourceTask {
 
     private static final Pattern LOCALE_PATTERN = ~/(?<language>\p{Alpha}{2,3})(-(?<region>\p{Alpha}{2}|\d{3}))?/
 
+    @Internal('Represented as part of packageOutputDirectory')
     File outputDirectory
 
     @InputFiles
@@ -77,8 +78,7 @@ class XjcGenerate extends SourceTask {
     @Optional
     List<String> extraArgs
 
-    @Input
-    @Optional
+    @Internal('Represented as part of packageOutputDirectory')
     String targetPackage
 
     private Locale docLocale
