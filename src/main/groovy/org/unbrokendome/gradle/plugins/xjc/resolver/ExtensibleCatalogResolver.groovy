@@ -1,7 +1,7 @@
 package org.unbrokendome.gradle.plugins.xjc.resolver
 
-import com.sun.org.apache.xml.internal.resolver.CatalogManager
-import com.sun.org.apache.xml.internal.resolver.tools.CatalogResolver
+import org.apache.xml.resolver.CatalogManager
+import org.apache.xml.resolver.tools.CatalogResolver
 import org.gradle.api.logging.Logger
 
 

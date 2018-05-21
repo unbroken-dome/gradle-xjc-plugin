@@ -30,6 +30,7 @@ dependencies {
     compile 'com.sun.xml.bind:jaxb-core:2.2.11'
     compile 'com.sun.xml.bind:jaxb-impl:2.2.11'
     compile 'com.sun.xml.bind:jaxb-xjc:2.2.11'
+    compile 'xml-resolver:xml-resolver:1.2'
 
     testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
         exclude group: 'org.codehaus.groovy', module: 'groovy-all'

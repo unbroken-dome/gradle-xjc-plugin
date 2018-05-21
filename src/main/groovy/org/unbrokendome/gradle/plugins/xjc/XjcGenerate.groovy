@@ -1,23 +1,22 @@
 package org.unbrokendome.gradle.plugins.xjc
 
 import com.sun.codemodel.JCodeModel
-import com.sun.org.apache.xml.internal.resolver.CatalogManager
-import com.sun.org.apache.xml.internal.resolver.tools.CatalogResolver
 import com.sun.tools.xjc.Language
 import com.sun.tools.xjc.ModelLoader
 import com.sun.tools.xjc.Options
 import com.sun.tools.xjc.api.SpecVersion
 import com.sun.tools.xjc.util.ErrorReceiverFilter
+import org.apache.xml.resolver.CatalogManager
+import org.apache.xml.resolver.tools.CatalogResolver
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.*
 import org.unbrokendome.gradle.plugins.xjc.resolver.ClasspathUriResolver
 import org.unbrokendome.gradle.plugins.xjc.resolver.ExtensibleCatalogResolver
 import org.unbrokendome.gradle.plugins.xjc.resolver.MavenUriResolver
-import java.util.regex.Matcher
-import java.io.File
 
 import java.util.regex.Pattern
+
 
 class XjcGenerate extends SourceTask {
 
