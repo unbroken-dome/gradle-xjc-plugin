@@ -13,7 +13,7 @@ To use the XJC plugin, include either of the following in your build script:
 
 ```groovy
 plugins {
-    id 'org.unbroken-dome.xjc' version '1.2.0'
+    id 'org.unbroken-dome.xjc' version '1.3.0'
 }
 ```
 
@@ -23,7 +23,7 @@ plugins {
 buildscript {
     repositories { jcenter() }
     dependencies {
-        classpath 'org.unbroken-dome.gradle-plugins:gradle-xjc-plugin:1.2.0'
+        classpath 'org.unbroken-dome.gradle-plugins:gradle-xjc-plugin:1.3.0'
     }
 }
 
@@ -40,7 +40,7 @@ The parameters to the `xjcGenerate` task correspond to the parameters to the
  [`xjc` command line tool](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/xjc.html), but use
  the Gradle constructs (e.g. source sets) where it is more comfortable. The following table lists some common parameters
  to the `xjcGenerate` task.
- 
+
 ### Example
 
 ```groovy
@@ -51,9 +51,9 @@ xjcGenerate {
 }
 ```
 
- 
+
 ### Common Parameters
- 
+
 | Parameter | Type | Command-line equivalent | Default / convention value |
 |---|---|---|---|
 | `source` | `FileTree` | | all `*.xsd` files under `src/main/schema` |
@@ -78,7 +78,7 @@ The following parameters are used less commonly, to fine-tune the generation pro
 | `pluginClasspath` | `FileCollection` | `-classpath` | all modules in the `xjcClasspath` configuration |
 | `quiet` | `boolean` | `-quiet` | `false` |
 | `readOnly` | `boolean` | `-readOnly` | `false` |
-| `strictCheck` | `boolean` | `-nv` (`true` if not present) | `true` | 
+| `strictCheck` | `boolean` | `-nv` (`true` if not present) | `true` |
 | `targetPackage` | `String` | `-p` | not set |
 | `targetVersion` | `String` | `-target` | use latest version  |
 | `verbose` | `boolean` | `-verbose` | `false` |
@@ -94,7 +94,7 @@ Additionally, the following parameter may be used to control the output code gen
 | Parameter | Type | Description | Default value |
 |---|---|---|---|
 | `encoding` | `String` | Encoding for generated Java files | `UTF-8` |
-| `docLanguage` | `String` | Desired language for Javadoc comments in generated code (e.g. `"en-US"`) | JVM's default `Locale` | 
+| `docLanguage` | `String` | Desired language for Javadoc comments in generated code (e.g. `"en-US"`) | JVM's default `Locale` |
 
 
 ## Including Generated Code in the Compilation
@@ -128,7 +128,7 @@ XJC allows to hook into and extend the code-generation process by using plugins.
  `equals()` and `toString()` methods into generated classes.
 
 ### Specifying the plugin classpath
- 
+
 The plugin JARs must be on the classpath for the `xjc` invocation. With the xjc Gradle plugin, you can do this very
  comfortably by adding dependencies to the `xjcClasspath` configuration:
 
@@ -142,7 +142,7 @@ dependencies {
 
 Most XJC plugins need to be activated and/or configured using command-line arguments. You can specify these extra
  arguments in the `extraArgs` parameter to the `xjcGenerate` task:
- 
+
 ```groovy
 xjcGenerate {
     extraArgs = [
@@ -176,7 +176,7 @@ dependencies {
 
 These dependencies should resolve to JAR files; if they contain a `META-INF/sun-jaxb.episode` entry it will be
  imported by the current `xjc` invocation.
- 
+
 Of course, you may use a different configuration, like `compileClasspath`, as the source of episode JARs:
 
 ```groovy
@@ -190,7 +190,7 @@ xjcGenerate {
 
 By default, an episode file will be generated under `build/xjc/sun-jaxb.episode`, but it will not be included in the
  build's JAR artifact. If you would like to do so, set the `xjc.includeEpisodeFileInJar` flag to `true`:
- 
+
 ```groovy
 xjc {
     includeEpisodeFileInJar = true
@@ -205,7 +205,7 @@ which would place the episode file under `META-INF/sun-jaxb.episode` in the JAR.
 Catalogs can be used to map the URI of an imported schema (specified using `<xsd:import>`) to an actual URL or file
  from where it can be read. This is especially useful if the imported URI is only symbolic, or you cannot
  (or do not want to) change the importing schema.
- 
+
 To use a catalog, first specify the location of the catalog file(s) in the `XjcGenerate` task configuration,
  for example:
 
@@ -217,7 +217,7 @@ xjcGenerate {
 
 In the catalog file you can use the `REWRITE_SYSTEM` instruction to map an URI to the actual location of the schema,
  e.g.
- 
+
 ```text
 REWRITE_SYSTEM "http://schemas.example.com" "http://www.example.com/etc/schemas/"
 ```
@@ -230,7 +230,7 @@ This plugin supports two special URI schemes in catalogs, the `classpath:` and `
 
 The `classpath:` interprets the rest of the URI as the path to a classpath resource. This is especially useful for
  multi-step code generation where a library JAR contains the schema, an episode file and generated code:
- 
+
 ```groovy
 // build.gradle
 
@@ -240,7 +240,7 @@ dependencies {
 
 xjcGenerate {
     episodes compileClasspath         // compileClasspath includes all "implementation" dependencies
-    
+
 }
 ```
 
@@ -263,11 +263,11 @@ And then reference it in the importing schema:
 By default, all JARs in the
  `compileClasspath` configuration are taken into account, but you can use a custom configuration by setting the
  `catalogResolutionClasspath` property on the `XjcGenerate` task.
- 
+
 
 The `maven:` scheme works similar to the `classpath:` scheme, but allows you to specify additional Maven coordinates
  to filter the dependency. The syntax is (without spaces)
- 
+
 ```text
 maven:<groupId>:<artifactId>:<extension>:<classifier>:<version>!path/to/resource
 ```
@@ -278,4 +278,4 @@ Note that in contrast to the Maven JAXB2 Plugin, the dependency isn't resolved a
  listed in your Gradle build script.
 
 You can think of the `maven:` scheme as an extension to `classpath:` with a filter for the JARs to be searched
- for resources. (In fact, `classpath:` is defined as an alias for `maven::!`.) 
+ for resources. (In fact, `classpath:` is defined as an alias for `maven::!`.)
