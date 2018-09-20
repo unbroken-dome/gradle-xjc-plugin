@@ -20,6 +20,7 @@ class CatalogIntegrationTest extends Specification {
                 
                 dependencies {
                     compileOnly 'javax.servlet:javax.servlet-api:3.1.0'
+                    implementation 'javax.xml.bind:jaxb-api:2.2.11'
                 }
 
                 xjcGenerate {
