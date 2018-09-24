@@ -106,6 +106,7 @@ Multiple URLs can be placed into one file, one URL per line. Alternativly multip
 #### Example
 
 ```text
+# remote.url
 https://www.domain.com/service?WSDL
 ```
 
