@@ -66,7 +66,9 @@ class XjcIntegrationTest extends Specification {
     def "build remote wsdl"() {
         given:
             def schemaFolder = testProjectDir.newFolder('src', 'main', 'schema')
-           
+            File urlFile = testProjectDir.newFile('src/main/schema/vat.url')
+            urlFile << "http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl"
+
             buildFile << """
                 plugins {
                     id 'org.unbroken-dome.xjc'
@@ -77,8 +79,7 @@ class XjcIntegrationTest extends Specification {
                 }
             """
         when:
-            File urlFile = testProjectDir.newFile('src/main/schema/vat.url')
-            urlFile << "http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl"
+
             def result = GradleRunner.create()
                     .withProjectDir(testProjectDir.root)
                     .withPluginClasspath()
@@ -86,7 +87,6 @@ class XjcIntegrationTest extends Specification {
                     .withDebug(true)
                     .build()
             def generatedFiles = new File(testProjectDir.root, 'build/xjc/generated-sources').listFiles()*.name
-            println generatedFiles
         then:
             result.task(':xjcGenerate').outcome == TaskOutcome.SUCCESS
         and:
@@ -98,7 +98,7 @@ class XjcIntegrationTest extends Specification {
             def schemaFolder = testProjectDir.newFolder('src', 'main', 'schema')
             File urlFile = testProjectDir.newFile('src/main/schema/vat.url')
             urlFile << "\\ec.europa.eu/taxation_customs/vies/checkVatService.wsdl"
-            
+
             buildFile << """
                 plugins {
                     id 'org.unbroken-dome.xjc'
