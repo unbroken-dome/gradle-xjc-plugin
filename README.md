@@ -96,6 +96,25 @@ Additionally, the following parameter may be used to control the output code gen
 | `encoding` | `String` | Encoding for generated Java files | `UTF-8` |
 | `docLanguage` | `String` | Desired language for Javadoc comments in generated code (e.g. `"en-US"`) | JVM's default `Locale` |
 
+### Remote schemas
+If the schema can or should not be located in the local file system, place a file with the extension `.url` into
+`src/main/schema` which contains the URL of the remote schema (a WSDL for example). Configure the plugin to 
+match for `.url` files.
+
+Multiple URLs can be placed into one file, one URL per line. Alternativly multiple files with one line each can be used.
+
+#### Example
+
+```text
+https://www.domain.com/service?WSDL
+```
+
+```groovy
+xjcGenerate {
+    source = fileTree('src/main/schema') { include '*.url' }
+}
+```
+
 
 ## Including Generated Code in the Compilation
 

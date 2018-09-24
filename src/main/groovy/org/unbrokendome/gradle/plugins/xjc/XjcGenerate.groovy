@@ -184,7 +184,6 @@ class XjcGenerate extends SourceTask {
 
         def options = new Options()
 
-        //options.schemaLanguage = Language.XMLSCHEMA
         options.target = (targetVersion != null) ? SpecVersion.parse(targetVersion) : SpecVersion.LATEST
         options.targetDir = getOutputDirectory()
 
