@@ -98,8 +98,7 @@ Additionally, the following parameter may be used to control the output code gen
 
 ### Remote schemas
 If the schema can or should not be located in the local file system, place a file with the extension `.url` into
-`src/main/schema` which contains the URL of the remote schema (a WSDL for example). Configure the plugin to 
-match for `.url` files.
+`src/main/schema` which contains the URL of the remote schema (a WSDL for example).
 
 Multiple URLs can be placed into one file, one URL per line. Alternativly multiple files with one line each can be used.
 
@@ -112,7 +111,7 @@ https://www.domain.com/service?WSDL
 
 ```groovy
 xjcGenerate {
-    source = fileTree('src/main/schema') { include '*.url' }
+    urlSources = fileTree('src/main/schema') { include '*.url' }
 }
 ```
 

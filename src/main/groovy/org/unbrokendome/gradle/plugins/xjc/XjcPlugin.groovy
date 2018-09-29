@@ -36,6 +36,7 @@ class XjcPlugin implements Plugin<Project> {
         xjcTask.description = 'Generates Java classes from XML schema using the XJC binding compiler'
         xjcTask.source = project.fileTree('src/main/schema') { include '*.xsd' }
         xjcTask.bindingFiles = project.fileTree('src/main/schema') { include '*.xjb' }
+        xjcTask.urlSources  = project.fileTree('src/main/schema') { include '*.url' }
         xjcTask.episodes = project.configurations.create XJC_EPISODE_CONFIGURATION_NAME
         xjcTask.pluginClasspath = project.configurations.create XJC_CLASSPATH_CONFIGURATION_NAME
         xjcTask.conventionMapping.with {

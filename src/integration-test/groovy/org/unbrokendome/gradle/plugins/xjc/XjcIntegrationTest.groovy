@@ -1,19 +1,17 @@
 package org.unbrokendome.gradle.plugins.xjc
 
-import org.gradle.api.tasks.TaskExecutionException
-import org.gradle.testkit.runner.GradleRunner
-import org.gradle.testkit.runner.TaskOutcome
-import org.gradle.testkit.runner.UnexpectedBuildFailure
-import org.gradle.testkit.runner.UnexpectedBuildResultException
-import org.gradle.testkit.runner.UnexpectedBuildSuccess
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
-import spock.lang.Specification
+import static org.hamcrest.Matchers.*
+import static spock.util.matcher.HamcrestSupport.*
 
 import java.nio.file.Files
 
-import static spock.util.matcher.HamcrestSupport.*
-import static org.hamcrest.Matchers.*
+import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome
+import org.gradle.testkit.runner.UnexpectedBuildSuccess
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
+
+import spock.lang.Specification
 
 
 class XjcIntegrationTest extends Specification {
@@ -74,9 +72,6 @@ class XjcIntegrationTest extends Specification {
                     id 'org.unbroken-dome.xjc'
                 }
 
-                xjcGenerate {
-                    source = fileTree('src/main/schema') { include '*.url' }
-                }
             """
         when:
 
@@ -92,7 +87,7 @@ class XjcIntegrationTest extends Specification {
         and:
             expect generatedFiles, contains('eu')
     }
-    
+
     def "broken url"() {
         given:
             def schemaFolder = testProjectDir.newFolder('src', 'main', 'schema')
@@ -118,6 +113,6 @@ class XjcIntegrationTest extends Specification {
         then:
             notThrown UnexpectedBuildSuccess
             result.task(':xjcGenerate').outcome == TaskOutcome.FAILED
-            
+            result.output.contains('java.net.MalformedURLException')
     }
 }

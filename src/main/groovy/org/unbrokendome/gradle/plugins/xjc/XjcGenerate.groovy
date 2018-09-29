@@ -31,6 +31,10 @@ class XjcGenerate extends SourceTask {
     FileCollection bindingFiles
 
     @InputFiles
+    @SkipWhenEmpty
+    FileCollection urlSources
+
+    @InputFiles
     @Optional
     FileCollection catalogs
 
@@ -84,6 +88,9 @@ class XjcGenerate extends SourceTask {
 
     private Locale docLocale
 
+    XjcGenerate() {
+        outputs.upToDateWhen { urlSources.empty }
+    }
 
     @Input
     @Optional
@@ -195,18 +202,15 @@ class XjcGenerate extends SourceTask {
             options.entityResolver = catalogResolver
         }
 
-        source?.each {
-             if (it.name.endsWith('.url')) {
-                 it.readLines().grep { line -> line?.trim() }.each { url -> 
-                     try {
-                         url.toURL().toURI()
-                     } catch(MalformedURLException | URISyntaxException e) {
-                         throw new IllegalArgumentException(e)
-                     }
-                     options.addGrammar(new InputSource(url)) 
-                 }    
-             } else {
-                 options.addGrammar it
+        source?.each { options.addGrammar it }
+        urlSources?.each {
+             it.readLines().grep { line -> line?.trim() }.each { url ->
+                 try {
+                     url.toURL().toURI()
+                 } catch(MalformedURLException | URISyntaxException e) {
+                     throw new IllegalArgumentException(e)
+                 }
+                 options.addGrammar(new InputSource(url))
              }
         }
         bindingFiles?.each { options.addBindFile it }
