@@ -83,11 +83,12 @@ The following parameters are used less commonly, to fine-tune the generation pro
 | `targetVersion` | `String` | `-target` | use latest version  |
 | `verbose` | `boolean` | `-verbose` | `false` |
 
-The following parameter is specific to the Gradle plugin and has no command-line equivalent:
+The following parameters are specific to the Gradle plugin and have no command-line equivalent:
 
 | Parameter | Type | Description | Default value |
 |---|---|---|---|
 | `catalogResolutionClasspath` | `Configuration` | Where to look for imported schemas when using the `maven:` or `classpath:` URI scheme in catalogs (see below) | `compileClasspath` (`compile` in older Gradle versions) |
+| `urlSources` | `FileCollection` | Files containing URLs of remote schemas (see below) | All `*.url` files under `src/main/schema` |
 
 Additionally, the following parameter may be used to control the output code generation:
 
@@ -96,11 +97,14 @@ Additionally, the following parameter may be used to control the output code gen
 | `encoding` | `String` | Encoding for generated Java files | `UTF-8` |
 | `docLanguage` | `String` | Desired language for Javadoc comments in generated code (e.g. `"en-US"`) | JVM's default `Locale` |
 
-### Remote schemas
-If the schema can or should not be located in the local file system, place a file with the extension `.url` into
+## Remote schemas
+
+If the schema cannot or should not be located in the local file system, place a file with the extension `.url` into
 `src/main/schema` which contains the URL of the remote schema (a WSDL for example).
 
 Multiple URLs can be placed into one file, one URL per line. Alternativly multiple files with one line each can be used.
+
+The location of such URL listing files can be configured using the `urlSources` property of the `xjcGenerate` task.
 
 #### Example
 
