@@ -1,11 +1,7 @@
 package org.unbrokendome.gradle.plugins.xjc
 
-import com.sun.codemodel.JCodeModel
-import com.sun.tools.xjc.Language
-import com.sun.tools.xjc.ModelLoader
-import com.sun.tools.xjc.Options
-import com.sun.tools.xjc.api.SpecVersion
-import com.sun.tools.xjc.util.ErrorReceiverFilter
+import java.util.regex.Pattern
+
 import org.apache.xml.resolver.CatalogManager
 import org.apache.xml.resolver.tools.CatalogResolver
 import org.gradle.api.artifacts.Configuration
@@ -14,8 +10,13 @@ import org.gradle.api.tasks.*
 import org.unbrokendome.gradle.plugins.xjc.resolver.ClasspathUriResolver
 import org.unbrokendome.gradle.plugins.xjc.resolver.ExtensibleCatalogResolver
 import org.unbrokendome.gradle.plugins.xjc.resolver.MavenUriResolver
+import org.xml.sax.InputSource
 
-import java.util.regex.Pattern
+import com.sun.codemodel.JCodeModel
+import com.sun.tools.xjc.ModelLoader
+import com.sun.tools.xjc.Options
+import com.sun.tools.xjc.api.SpecVersion
+import com.sun.tools.xjc.util.ErrorReceiverFilter
 
 
 class XjcGenerate extends SourceTask {
@@ -28,6 +29,10 @@ class XjcGenerate extends SourceTask {
     @InputFiles
     @Optional
     FileCollection bindingFiles
+
+    @InputFiles
+    @SkipWhenEmpty
+    FileCollection urlSources
 
     @InputFiles
     @Optional
@@ -83,6 +88,9 @@ class XjcGenerate extends SourceTask {
 
     private Locale docLocale
 
+    XjcGenerate() {
+        outputs.upToDateWhen { urlSources.empty }
+    }
 
     @Input
     @Optional
@@ -183,7 +191,6 @@ class XjcGenerate extends SourceTask {
 
         def options = new Options()
 
-        options.schemaLanguage = Language.XMLSCHEMA
         options.target = (targetVersion != null) ? SpecVersion.parse(targetVersion) : SpecVersion.LATEST
         options.targetDir = getOutputDirectory()
 
@@ -196,6 +203,16 @@ class XjcGenerate extends SourceTask {
         }
 
         source?.each { options.addGrammar it }
+        urlSources?.each {
+             it.readLines().grep { line -> line?.trim() }.each { url ->
+                 try {
+                     url.toURL().toURI()
+                 } catch(MalformedURLException | URISyntaxException e) {
+                     throw new IllegalArgumentException(e)
+                 }
+                 options.addGrammar(new InputSource(url))
+             }
+        }
         bindingFiles?.each { options.addBindFile it }
         pluginClasspath?.each { options.classpaths.add it.toURI().toURL() }
         episodes?.each { options.scanEpisodeFile it }
