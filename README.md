@@ -13,7 +13,7 @@ To use the XJC plugin, include either of the following in your build script:
 
 ```groovy
 plugins {
-    id 'org.unbroken-dome.xjc' version '1.3.0'
+    id 'org.unbroken-dome.xjc' version '1.4.0'
 }
 ```
 
@@ -23,7 +23,7 @@ plugins {
 buildscript {
     repositories { jcenter() }
     dependencies {
-        classpath 'org.unbroken-dome.gradle-plugins:gradle-xjc-plugin:1.3.0'
+        classpath 'org.unbroken-dome.gradle-plugins:gradle-xjc-plugin:1.4.0'
     }
 }
 
