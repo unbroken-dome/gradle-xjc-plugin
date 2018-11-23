@@ -263,7 +263,6 @@ dependencies {
 
 xjcGenerate {
     episodes compileClasspath         // compileClasspath includes all "implementation" dependencies
-
 }
 ```
 
@@ -283,10 +282,14 @@ And then reference it in the importing schema:
             schemaLocation="http://schemas.example.com/my-model.xsd" />
 ```
 
-By default, all JARs in the
- `compileClasspath` configuration are taken into account, but you can use a custom configuration by setting the
- `catalogResolutionClasspath` property on the `XjcGenerate` task.
+By default, all JARs in the special configuration `xjcCatalogResolution` are taken into account, which
+ inherits all dependencies from `compileClasspath` (unless `includeInMainCompilation` is set to `false` -
+ see below). You can add dependencies to this configuration, or use a custom configuration by setting
+ the `catalogResolutionClasspath` property on the `XjcGenerate` task.
 
+When using catalogs together with a separate source set (i.e. setting `includeInMainCompilation` to false),
+you will need to specify the catalog resolution dependencies manually. The reason for this is that usually your
+`compileClasspath` will include the XJC-generated files itself, which would lead to a circular task dependency.
 
 The `maven:` scheme works similar to the `classpath:` scheme, but allows you to specify additional Maven coordinates
  to filter the dependency. The syntax is (without spaces)
