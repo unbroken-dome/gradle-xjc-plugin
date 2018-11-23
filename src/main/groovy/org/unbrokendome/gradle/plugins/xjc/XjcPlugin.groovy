@@ -2,18 +2,21 @@ package org.unbrokendome.gradle.plugins.xjc
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
-import org.gradle.jvm.tasks.Jar
+import org.gradle.api.tasks.bundling.Jar
 
 
+@SuppressWarnings("GrMethodMayBeStatic")
 class XjcPlugin implements Plugin<Project> {
 
-    public static final String XJC_EXTENSION_NAME = 'xjc'
-    public static final String XJC_EPISODE_CONFIGURATION_NAME = 'xjcEpisode'
-    public static final String XJC_CLASSPATH_CONFIGURATION_NAME = 'xjcClasspath'
-    public static final String XJC_GENERATE_TASK_NAME = 'xjcGenerate'
+    static final String XJC_EXTENSION_NAME = 'xjc'
+    static final String XJC_EPISODE_CONFIGURATION_NAME = 'xjcEpisode'
+    static final String XJC_CLASSPATH_CONFIGURATION_NAME = 'xjcClasspath'
+    static final String XJC_CATALOG_RESOLUTION_CONFIGURATION_NAME = 'xjcCatalogResolution'
+    static final String XJC_GENERATE_TASK_NAME = 'xjcGenerate'
 
 
     @Override
@@ -37,16 +40,21 @@ class XjcPlugin implements Plugin<Project> {
         xjcTask.source = project.fileTree('src/main/schema') { include '*.xsd' }
         xjcTask.bindingFiles = project.fileTree('src/main/schema') { include '*.xjb' }
         xjcTask.urlSources  = project.fileTree('src/main/schema') { include '*.url' }
-        xjcTask.episodes = project.configurations.create XJC_EPISODE_CONFIGURATION_NAME
-        xjcTask.pluginClasspath = project.configurations.create XJC_CLASSPATH_CONFIGURATION_NAME
+        xjcTask.episodes = createInternalConfiguration(project, XJC_EPISODE_CONFIGURATION_NAME)
+        xjcTask.pluginClasspath = createInternalConfiguration(project, XJC_CLASSPATH_CONFIGURATION_NAME)
+        xjcTask.catalogResolutionClasspath = createInternalConfiguration(project, XJC_CATALOG_RESOLUTION_CONFIGURATION_NAME)
         xjcTask.conventionMapping.with {
             map('outputDirectory') { project.file("${project.buildDir}/xjc/generated-sources") }
             map('episodeTargetFile') { project.file("${project.buildDir}/xjc/sun-jaxb.episode") }
-            map('catalogResolutionClasspath') {
-                project.configurations.findByName('compileClasspath') ?: project.configurations.findByName('compile')
-            }
         }
         xjcTask
+    }
+
+
+    private Configuration createInternalConfiguration(Project project, String name) {
+        project.configurations.create(name) { Configuration c ->
+            c.visible = false
+        }
     }
 
 
@@ -61,6 +69,18 @@ class XjcPlugin implements Plugin<Project> {
 
                 def compileJavaTask = project.tasks.getByName JavaPlugin.COMPILE_JAVA_TASK_NAME
                 compileJavaTask.dependsOn xjcTask
+
+                def catalogResolutionConfiguration = project.configurations.getByName XJC_CATALOG_RESOLUTION_CONFIGURATION_NAME
+
+                // If the catalog resolution classpath hasn't been modified, make it extend from the compileClasspath
+                // (note that we can only do this if includeInMainCompilation is true, otherwise we would get a
+                // circular dependency - see issue #11)
+                if (catalogResolutionConfiguration.extendsFrom.empty && catalogResolutionConfiguration.dependencies.empty) {
+                    //noinspection GrDeprecatedAPIUsage
+                    catalogResolutionConfiguration.extendsFrom(
+                            project.configurations.findByName('compileClasspath')
+                                    ?: project.configurations.findByName(JavaPlugin.COMPILE_CONFIGURATION_NAME))
+                }
             }
         }
     }
