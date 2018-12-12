@@ -215,6 +215,9 @@ class XjcGenerate extends SourceTask {
         }
         bindingFiles?.each { options.addBindFile it }
         pluginClasspath?.each { options.classpaths.add it.toURI().toURL() }
+
+        Thread.currentThread().setContextClassLoader(options.getUserClassLoader(Thread.currentThread().getContextClassLoader()))
+
         episodes?.each { options.scanEpisodeFile it }
 
         options.strictCheck = strictCheck
