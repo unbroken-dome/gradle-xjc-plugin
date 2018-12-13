@@ -1,5 +1,7 @@
 package org.unbrokendome.gradle.plugins.xjc
 
+import org.gradle.util.VersionNumber
+
 import java.util.regex.Pattern
 
 import org.apache.xml.resolver.CatalogManager
@@ -53,6 +55,10 @@ class XjcGenerate extends SourceTask {
     @Input
     @Optional
     String targetVersion
+
+    @Input
+    String jaxbVersion = "2.2.11"
+
     @Input
     boolean extension = false
     @Input
@@ -216,7 +222,11 @@ class XjcGenerate extends SourceTask {
         bindingFiles?.each { options.addBindFile it }
         pluginClasspath?.each { options.classpaths.add it.toURI().toURL() }
 
-        Thread.currentThread().setContextClassLoader(options.getUserClassLoader(Thread.currentThread().getContextClassLoader()))
+        // Handles adding the plugins into the TCCL classpath that the Options class no longer does
+        VersionNumber jaxbVersionNumber = VersionNumber.parse(jaxbVersion)
+        if (jaxbVersionNumber.major == 2 && jaxbVersionNumber.minor > 2) {
+            Thread.currentThread().setContextClassLoader(options.getUserClassLoader(Thread.currentThread().getContextClassLoader()))
+        }
 
         episodes?.each { options.scanEpisodeFile it }
 

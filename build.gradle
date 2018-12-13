@@ -27,10 +27,10 @@ repositories {
 
 
 dependencies {
-    compile 'com.sun.xml.bind:jaxb-core:2.3.0.1'
-    compile 'com.sun.xml.bind:jaxb-impl:2.3.1'
-    compile 'com.sun.xml.bind:jaxb-xjc:2.3.1'
-    compile 'javax.xml.bind:jaxb-api:2.3.1'
+    compile 'com.sun.xml.bind:jaxb-core:2.2.11'
+    compile 'com.sun.xml.bind:jaxb-impl:2.2.11'
+    compile 'com.sun.xml.bind:jaxb-xjc:2.2.11'
+    compile 'javax.xml.bind:jaxb-api:2.2.11'
     compile 'javax.activation:activation:1.1.1'
     compile 'xml-resolver:xml-resolver:1.2'
 
