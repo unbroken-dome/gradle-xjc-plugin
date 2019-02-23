@@ -26,6 +26,15 @@ class XjcPlugin implements Plugin<Project> {
 
         project.extensions.create XJC_EXTENSION_NAME, XjcExtension
 
+        def episodesConfiguration = createInternalConfiguration(project, XJC_EPISODE_CONFIGURATION_NAME)
+        def pluginClasspathConfiguration = createInternalConfiguration(project, XJC_CLASSPATH_CONFIGURATION_NAME)
+        def catalogResolutionClasspathConfiguration = createInternalConfiguration(project, XJC_CATALOG_RESOLUTION_CONFIGURATION_NAME)
+        project.tasks.withType(XjcGenerate) { XjcGenerate task ->
+            task.episodes = episodesConfiguration
+            task.pluginClasspath = pluginClasspathConfiguration
+            task.catalogResolutionClasspath = catalogResolutionClasspathConfiguration
+        }
+
         def xjcTask = createXjcGenerateTask(project)
 
         handleIncludeInMainCompilation(project, xjcTask)
@@ -39,9 +48,6 @@ class XjcPlugin implements Plugin<Project> {
         xjcTask.source = project.fileTree('src/main/schema') { include '*.xsd' }
         xjcTask.bindingFiles = project.fileTree('src/main/schema') { include '*.xjb' }
         xjcTask.urlSources  = project.fileTree('src/main/schema') { include '*.url' }
-        xjcTask.episodes = createInternalConfiguration(project, XJC_EPISODE_CONFIGURATION_NAME)
-        xjcTask.pluginClasspath = createInternalConfiguration(project, XJC_CLASSPATH_CONFIGURATION_NAME)
-        xjcTask.catalogResolutionClasspath = createInternalConfiguration(project, XJC_CATALOG_RESOLUTION_CONFIGURATION_NAME)
         xjcTask.conventionMapping.with {
             map('outputDirectory') { project.file("${project.buildDir}/xjc/generated-sources") }
             map('episodeTargetFile') { project.file("${project.buildDir}/xjc/sun-jaxb.episode") }
