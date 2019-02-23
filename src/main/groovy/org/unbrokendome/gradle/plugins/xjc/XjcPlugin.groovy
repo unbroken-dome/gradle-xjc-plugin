@@ -35,8 +35,7 @@ class XjcPlugin implements Plugin<Project> {
 
     private XjcGenerate createXjcGenerateTask(Project project) {
         def xjcTask = project.tasks.create XJC_GENERATE_TASK_NAME, XjcGenerate
-        xjcTask.group = 'code generation'
-        xjcTask.description = 'Generates Java classes from XML schema using the XJC binding compiler'
+
         xjcTask.source = project.fileTree('src/main/schema') { include '*.xsd' }
         xjcTask.bindingFiles = project.fileTree('src/main/schema') { include '*.xjb' }
         xjcTask.urlSources  = project.fileTree('src/main/schema') { include '*.url' }

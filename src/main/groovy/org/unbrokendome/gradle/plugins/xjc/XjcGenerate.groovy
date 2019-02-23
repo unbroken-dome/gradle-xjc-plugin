@@ -1,7 +1,10 @@
 package org.unbrokendome.gradle.plugins.xjc
 
-import java.util.regex.Pattern
-
+import com.sun.codemodel.JCodeModel
+import com.sun.tools.xjc.ModelLoader
+import com.sun.tools.xjc.Options
+import com.sun.tools.xjc.api.SpecVersion
+import com.sun.tools.xjc.util.ErrorReceiverFilter
 import org.apache.xml.resolver.CatalogManager
 import org.apache.xml.resolver.tools.CatalogResolver
 import org.gradle.api.artifacts.Configuration
@@ -12,12 +15,8 @@ import org.unbrokendome.gradle.plugins.xjc.resolver.ExtensibleCatalogResolver
 import org.unbrokendome.gradle.plugins.xjc.resolver.MavenUriResolver
 import org.xml.sax.InputSource
 
-import com.sun.codemodel.JCodeModel
-import com.sun.tools.xjc.ModelLoader
-import com.sun.tools.xjc.Options
-import com.sun.tools.xjc.api.SpecVersion
-import com.sun.tools.xjc.util.ErrorReceiverFilter
-
+import javax.annotation.CheckForNull
+import java.util.regex.Pattern
 
 class XjcGenerate extends SourceTask {
 
@@ -28,26 +27,32 @@ class XjcGenerate extends SourceTask {
 
     @InputFiles
     @Optional
+    @CheckForNull
     FileCollection bindingFiles
 
     @InputFiles
     @SkipWhenEmpty
+    @CheckForNull
     FileCollection urlSources
 
     @InputFiles
     @Optional
+    @CheckForNull
     FileCollection catalogs
 
     @InputFiles
     @Optional
+    @CheckForNull
     FileCollection episodes
 
     @InputFiles
     @Optional
+    @CheckForNull
     FileCollection pluginClasspath
 
     @InputFiles
     @Optional
+    @CheckForNull
     Configuration catalogResolutionClasspath
 
     @Input
@@ -77,31 +82,40 @@ class XjcGenerate extends SourceTask {
 
     @OutputFile
     @Optional
+    @CheckForNull
     File episodeTargetFile
 
     @Input
     @Optional
+    @CheckForNull
     List<String> extraArgs
 
     @Internal('Represented as part of packageOutputDirectory')
+    @CheckForNull
     String targetPackage
 
+    @CheckForNull
     private Locale docLocale
 
     XjcGenerate() {
-        outputs.upToDateWhen { urlSources.empty }
+        group = 'code generation'
+        description = 'Generates Java classes from XML schema using the XJC binding compiler'
+
+        outputs.upToDateWhen { !urlSources || urlSources.empty }
     }
 
     @Input
     @Optional
+    @CheckForNull
     String getDocLanguage() {
         docLocale?.toString()
     }
 
     @OutputDirectory
+    @CheckForNull
     File getPackageOutputDirectory() {
         File baseOutputDirectory = getOutputDirectory()
-        if(targetPackage == null) {
+        if (targetPackage == null) {
             return baseOutputDirectory
         } else {
             String targetPackagePath = targetPackage.replace('.' as char, File.separatorChar)
@@ -113,9 +127,10 @@ class XjcGenerate extends SourceTask {
      * Gets the plugin classpath.
      *
      * @return the classpath on which XJC looks for plugins
-     * @deprecated use {@link #getPluginClasspath()} instead
+     * @deprecated use{@link #getPluginClasspath()} instead
      */
-    @Deprecated @Internal
+    @Deprecated
+    @Internal
     FileCollection getClasspath() {
         return pluginClasspath
     }
@@ -124,9 +139,10 @@ class XjcGenerate extends SourceTask {
      * Sets the plugin classpath.
      *
      * @param classpath the classpath on which XJC looks for plugins
-     * @deprecated use {@link #setPluginClasspath(FileCollection)} instead
+     * @deprecated use{@link #setPluginClasspath(FileCollection)} instead
      */
-    @Deprecated @Internal
+    @Deprecated
+    @Internal
     void setClasspath(FileCollection classpath) {
         setPluginClasspath(classpath)
     }
@@ -204,14 +220,14 @@ class XjcGenerate extends SourceTask {
 
         source?.each { options.addGrammar it }
         urlSources?.each {
-             it.readLines().grep { line -> line?.trim() }.each { url ->
-                 try {
-                     url.toURL().toURI()
-                 } catch(MalformedURLException | URISyntaxException e) {
-                     throw new IllegalArgumentException(e)
-                 }
-                 options.addGrammar(new InputSource(url))
-             }
+            it.readLines().grep { line -> line?.trim() }.each { url ->
+                try {
+                    url.toURL().toURI()
+                } catch (MalformedURLException | URISyntaxException e) {
+                    throw new IllegalArgumentException(e)
+                }
+                options.addGrammar(new InputSource(url))
+            }
         }
         bindingFiles?.each { options.addBindFile it }
         pluginClasspath?.each { options.classpaths.add it.toURI().toURL() }
