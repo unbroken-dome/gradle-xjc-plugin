@@ -165,6 +165,14 @@ class XjcGenerate extends SourceTask {
     }
 
 
+    @Internal
+    boolean includeInMainCompilation = true
+
+
+    @Internal
+    boolean includeEpisodeFileInJar = false
+
+
     @TaskAction
     void generateCode() {
 

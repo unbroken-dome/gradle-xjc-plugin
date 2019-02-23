@@ -24,15 +24,26 @@ class XjcPlugin implements Plugin<Project> {
 
         project.plugins.apply JavaPlugin
 
-        project.extensions.create XJC_EXTENSION_NAME, XjcExtension
+        def xjcExtension = project.extensions.create XJC_EXTENSION_NAME, XjcExtension
 
         def episodesConfiguration = createInternalConfiguration(project, XJC_EPISODE_CONFIGURATION_NAME)
         def pluginClasspathConfiguration = createInternalConfiguration(project, XJC_CLASSPATH_CONFIGURATION_NAME)
         def catalogResolutionClasspathConfiguration = createInternalConfiguration(project, XJC_CATALOG_RESOLUTION_CONFIGURATION_NAME)
+
         project.tasks.withType(XjcGenerate) { XjcGenerate task ->
             task.episodes = episodesConfiguration
             task.pluginClasspath = pluginClasspathConfiguration
             task.catalogResolutionClasspath = catalogResolutionClasspathConfiguration
+
+            task.conventionMapping.with {
+                map('includeInMainCompilation') { xjcExtension.includeInMainCompilation }
+                map('includeEpisodeFileInJar') { xjcExtension.includeEpisodeFileInJar }
+            }
+
+            project.afterEvaluate {
+                handleIncludeInMainCompilation(project, task)
+                handleIncludeEpisodeFileInJar(project, task)
+            }
         }
 
         def xjcTask = createXjcGenerateTask(project)
@@ -47,7 +58,7 @@ class XjcPlugin implements Plugin<Project> {
 
         xjcTask.source = project.fileTree('src/main/schema') { include '*.xsd' }
         xjcTask.bindingFiles = project.fileTree('src/main/schema') { include '*.xjb' }
-        xjcTask.urlSources  = project.fileTree('src/main/schema') { include '*.url' }
+        xjcTask.urlSources = project.fileTree('src/main/schema') { include '*.url' }
         xjcTask.conventionMapping.with {
             map('outputDirectory') { project.file("${project.buildDir}/xjc/generated-sources") }
             map('episodeTargetFile') { project.file("${project.buildDir}/xjc/sun-jaxb.episode") }
@@ -65,8 +76,7 @@ class XjcPlugin implements Plugin<Project> {
 
     private void handleIncludeInMainCompilation(Project project, XjcGenerate xjcTask) {
         project.afterEvaluate {
-            def xjcExtension = project.extensions.getByType XjcExtension
-            if (xjcExtension.includeInMainCompilation) {
+            if (xjcTask.includeInMainCompilation) {
                 def sourceSets = project.sourceSets as SourceSetContainer
                 sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).java {
                     srcDir xjcTask.outputDirectory
@@ -93,8 +103,7 @@ class XjcPlugin implements Plugin<Project> {
 
     private void handleIncludeEpisodeFileInJar(Project project, XjcGenerate xjcTask) {
         project.afterEvaluate {
-            def xjcExtension = project.extensions.getByType XjcExtension
-            if (xjcExtension.includeEpisodeFileInJar) {
+            if (xjcTask.includeEpisodeFileInJar && xjcTask.episodeTargetFile) {
                 def jarTask = project.tasks.getByName(JavaPlugin.JAR_TASK_NAME) as Jar
                 jarTask.into('META-INF') {
                     from xjcTask.episodeTargetFile
