@@ -150,6 +150,13 @@ sourceSets {
 XJC allows to hook into and extend the code-generation process by using plugins. A plugin might, for example, add
  `equals()` and `toString()` methods into generated classes.
 
+
+**NOTE**: Some XJC plugins generate code that entails additional compile-time or runtime
+ dependencies. Activating such plugins might require that you add these dependencies to your
+ Gradle dependency configurations, e.g. `implementation`. Please check the documentation for
+ these plugins for their additional dependencies.
+
+
 ### Specifying the plugin classpath
 
 The plugin JARs must be on the classpath for the `xjc` invocation. With the xjc Gradle plugin, you can do this very
@@ -164,13 +171,13 @@ dependencies {
 ### Specifying extra arguments
 
 Most XJC plugins need to be activated and/or configured using command-line arguments. You can specify these extra
- arguments in the `extraArgs` parameter to the `xjcGenerate` task:
+ arguments in the `extraArgs` parameter to the `xjcGenerate` task, for example:
 
 ```groovy
 xjcGenerate {
     extraArgs = [
-        '-Xcommons-lang',
-        '-Xfluent-api'
+        '-Xequals',
+        '-XtoString'
     ]
 }
 ```
