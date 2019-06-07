@@ -22,7 +22,7 @@ class XjcGenerate extends SourceTask {
 
     private static final Pattern LOCALE_PATTERN = ~/(?<language>\p{Alpha}{2,3})(-(?<region>\p{Alpha}{2}|\d{3}))?/
 
-    @Internal('Represented as part of packageOutputDirectory')
+    @Input
     File outputDirectory
 
     @InputFiles
@@ -114,9 +114,14 @@ class XjcGenerate extends SourceTask {
 
     @OutputDirectory
     @CheckForNull
+    @Optional
     File getPackageOutputDirectory() {
+
         File baseOutputDirectory = getOutputDirectory()
-        if (targetPackage == null) {
+
+        if (baseOutputDirectory == null) {
+            return null
+        } else if (targetPackage == null) {
             return baseOutputDirectory
         } else {
             String targetPackagePath = targetPackage.replace('.' as char, File.separatorChar)
