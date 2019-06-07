@@ -31,6 +31,7 @@ class XjcGenerate extends SourceTask {
     FileCollection bindingFiles
 
     @InputFiles
+    @Optional
     @SkipWhenEmpty
     @CheckForNull
     FileCollection urlSources
