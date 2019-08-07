@@ -185,6 +185,57 @@ xjcGenerate {
 The plugin will automatically use the JAXB extension mode if there are parameters starting with `-X`
  present, regardless of the `extension` flag.
 
+### Using the XJC jaxb2-annotate-plugin
+
+This plugin lets XJC add annotations to generated sources.
+
+Add the following dependencies to the `compile` configuration in the `build.gradle` of your project. Note that the `xjcClasspath` configuration doesn't result in successfully loading the plugin, must be the `compile` configuration:
+
+```
+dependencies {
+    compile "org.jvnet.jaxb2_commons:jaxb2-basics-tools:1.11.1"
+    compile "org.jvnet.jaxb2_commons:jaxb2-basics-annotate:1.0.3"
+    compile "org.jvnet.jaxb2_commons:jaxb2-basics-tools:0.8.1"
+    compile "org.jvnet.jaxb2_commons:jaxb2-basics:1.11.1"
+    compile "org.jvnet.annox:annox:1.0.1"
+    compile "com.github.javaparser:javaparser-core:3.14.9"
+    compile "commons-io:commons-io:1.2"
+    compile "commons-beanutils:commons-beanutils:1.7.0"
+    compile "commons-logging:commons-logging:1.1.1"
+    compile "org.apache.commons:commons-lang3:3.9"
+}
+
+```
+
+#### xjcGenerate Configuration for jaxb2-annotate-plugin
+
+```
+//Change to where your XSD/WSDLs are
+def xsdPath = "src/main/resources"
+xjcGenerate {
+    //-Xannotate activates the jaxb2-annotate-plugin
+    extraArgs = ["-Xannotate"]
+    extension = true
+    source = project.fileTree(dir: xsdPath, includes: ["**/*.xsd"])
+    bindingFiles = project.fileTree(dir:xsdPath, includes: ["*.xjb"])
+
+    //For WSDL support, use these extraArgs and source values instead 
+    //extraArgs = ["-Xannotate", "-wsdl"]
+    //source = project.fileTree(dir: xsdPath, includes: ["**/*.wsdl"])
+}
+
+```
+
+Note: if you get an error that looks something like this:
+
+```
+Execution failed for task 'xjcGenerate'.
+> com.sun.tools.xjc.BadCommandLineException: unrecognized parameter -Xannotate
+```
+
+then that means that XJC did not successfully load the `jaxb2-annotate-plugin` and you should
+troubleshoot that. The `-Xannotate` parameter is only available if the `jaxb2-annotate-plugin` is
+successfully loaded.
 
 ## Using Episodes
 
