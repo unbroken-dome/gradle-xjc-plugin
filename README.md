@@ -195,7 +195,6 @@ Add the following dependencies to the `compile` configuration in the `build.grad
 dependencies {
     compile "org.jvnet.jaxb2_commons:jaxb2-basics-tools:1.11.1"
     compile "org.jvnet.jaxb2_commons:jaxb2-basics-annotate:1.0.3"
-    compile "org.jvnet.jaxb2_commons:jaxb2-basics-tools:0.8.1"
     compile "org.jvnet.jaxb2_commons:jaxb2-basics:1.11.1"
     compile "org.jvnet.annox:annox:1.0.1"
     compile "com.github.javaparser:javaparser-core:3.14.9"
