@@ -178,6 +178,7 @@ pluginBundle {
     website = "https://github.com/unbroken-dome/gradle-xjc-plugin"
     vcsUrl = "https://github.com/unbroken-dome/gradle-xjc-plugin"
     description = "A plugin that integrates the XJC binding compiler into a Gradle build."
+    tags = listOf("xjc", "jaxb", "code generation", "xml")
 
     (plugins) {
         "xjcPlugin" {
