@@ -1,0 +1,109 @@
+= Controlling XJC Behavior
+
+The link:https://docs.oracle.com/javase/8/docs/technotes/tools/unix/xjc.html[command line version] of XJC supports
+a number of arguments to fine-tune the code generation. The XJC Gradle plugin supports many of these as properties
+which can be set in the build script.
+
+The following properties are available in the project-scoped `xjc` block, and apply to all XJC invocations
+(for all source sets):
+
+|===
+| Property | Description | Equivalent `xjc` CLI flag | Default
+
+| `targetVersion` (`String`)
+| The version of the JAXB specification to target.
+| `-target`
+| (use latest version)
+
+| `docLocale` (`java.util.Locale`)
+| The locale to be used when running XJC. This may influence the language of documentation comments in XJC-generated files.
+| (no equivalent)
+| JVM default locale
+
+| `encoding` (`String`)
+| The encoding for generated files.
+| `-encoding` (non-standard)
+| `UTF-8`
+
+| `strictCheck` (`Boolean`)
+| Perform strict schema validation.
+| `-nv` (if `false`)
+| `true`
+
+| `packageLevelAnnotations` (`Boolean`)
+| Generate package-level annotations into `package-info.java` files.
+| `-npa` (if `false`)
+| `true`
+
+| `noFileHeader` (`Boolean`)
+| Suppress the generation of a file header comment that includes some note and timestamp.
+| `-no-header`
+| `true`
+
+| `enableIntrospection` (`Boolean`)
+| Fix getter/setter generation to match the Bean introspection API.
+| `-enableIntrospection` (non-standard)
+| `false`
+
+| `contentForWildcard` (`Boolean`)
+| Generates content property for types with multiple `xs:any` derived elements (which is
+  supposed to be correct behavior).
+| `-contentForWildcard` (non-standard)
+| `false`
+
+| `readOnly` (`Boolean`)
+| Write-protect the generated Java source files.
+| `-readOnly`
+| `false`
+
+| `extension` (`Boolean`)
+| Enable JAXB vendor extensions.
+| `-extension`
+| `false` (`true` if any `-X...` argument is present in `extraArgs`)
+|===
+
+The following property is available for each source set:
+
+|===
+| Property | Description | Equivalent `xjc` CLI flag | Default
+
+| `xjcTargetPackage` (`String`)
+| The target package for XJC.
+| `-p`
+| (not set)
+|===
+
+
+== Configuring XJC with Gradle Project Properties
+
+As an alternative to configuring the above settings in your build script, you can use Gradle project
+properties, either from a `gradle.properties` file or passed on the command line using the `-P` switch.
+The property name correspond to the dot-separated path of the DSL properties.
+
+Gradle properties are automatically picked up by subprojects in a multi-project build, so they are
+especially useful for configuring multiple projects at once.
+
+For example:
+
+[source,properties]
+.gradle.properties
+----
+xjc.xjcVersion=2.3
+xjc.targetVersion=2.2
+xjc.docLocale=en
+xjc.strictCheck=false
+xjc.enableIntrospection=true
+xjc.contentForWildcard=true
+xjc.verbosity=quiet
+----
+
+To selectively override properties for a Gradle build, use the `-P` switch on the command line:
+
+[source,bash]
+----
+gradle build -Pxjc.verbosity=verbose
+----
+
+
+NOTE: Using Gradle properties has lower precedence than explicitly setting them in your
+build script.

@@ -1,0 +1,29 @@
+= Remote Schema Locations
+
+XJC supports processing schemas from remote locations, in addition to schemas stored in the
+local file system.
+
+To use such remote schemas with the `org.unbroken-dome.xjc` Gradle plugin, add a text file
+with the extension `.url` into your `src/main/schema` directory. The `.url` file should list
+one remote schema URL per line.
+
+For example, to use the link:https://www.w3.org/TR/xmldsig-core/[xmldsig] schema from w3.org,
+add the following file to your project:
+
+[source,text]
+.src/main/schema/xmldsig.url
+----
+https://www.w3.org/TR/2002/REC-xmldsig-core-20020212/xmldsig-core-schema.xsd
+----
+
+Note that this works best with schemas that are guaranteed to be immutable at the remote
+location. If your `.url` file or other input files do not change, the Gradle task will not
+pick up changes from the remote schema location, and will still report as "up to date" in the
+Gradle build.
+
+TIP: To force a re-run of XJC even if your input files have not changed, use the `--rerun-tasks`
+flag when invoking Gradle.
+
+In most cases, it is still recommended to manually download the `.xsd` files and put them into
+your source directory. This will make your build less dependent on outside circumstances or network
+connectivity, and thus more robust and reproducible.

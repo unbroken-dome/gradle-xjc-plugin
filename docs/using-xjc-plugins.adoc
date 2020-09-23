@@ -1,0 +1,110 @@
+= Using XJC Plugins
+
+XJC allows hooking into and extending the code-generation process by using plugins. A plugin might, for example, add
+`equals()` and `toString()` methods into generated classes.
+
+[NOTE]
+====
+Some XJC plugins generate code that requires additional compile-time or runtime dependencies. Activating such plugins
+might require that you add these dependencies to your Gradle dependency configurations, e.g. `implementation`.
+Please check the documentation for these plugins for their additional dependencies.
+====
+
+
+== Specifying the plugin classpath
+
+The plugin JARs must be on the classpath for the `xjc` invocation. With the xjc Gradle plugin, you can do this very
+comfortably by adding dependencies to the `xjcClasspath` configuration.
+
+For example, to use the link:https://github.com/highsource/jaxb2-basics[JAXB2 Basics] plugin:
+
+[source,groovy,role="primary"]
+.Groovy
+----
+dependencies {
+    xjcClasspath 'org.jvnet.jaxb2_commons:jaxb2-basics:0.12.0'
+}
+----
+
+[source,kotlin,role="secondary"]
+.Kotlin
+----
+dependencies {
+    "xjcClasspath"("org.jvnet.jaxb2_commons:jaxb2-basics:0.12.0")
+}
+----
+
+[NOTE]
+====
+When using multiple source sets with XJC, there will be a separate XJC plugin classpath configuration for each source
+set in the project. For the `main` sourceSet, the configuration is called `xjcCatalogResolution` as described above.
+For other source sets it will be called `<name>XjcClasspath`, for example, `testXjcClasspath` for the
+`test` source set.
+
+In addition, the plugin creates a configuration called `xjcClasspathGlobal`, which is extended by all other plugin
+classpath configurations. Any plugin dependencies placed in this configuration will be picked up by XJC builds for
+all source sets.
+====
+
+
+
+== Specifying extra arguments
+
+Most XJC plugins need to be activated and/or configured using command-line arguments. You can specify these extra
+arguments using the `xjcExtraArgs` property on the source set. For example, to add the `-Xequals` and `-XtoString`
+arguments:
+
+[source,groovy,role="primary"]
+.Groovy
+----
+sourceSets {
+    main {
+        xjcExtraArgs.addAll '-Xequals', '-XhashCode', '-XtoString'
+    }
+}
+----
+
+[source,kotlin,role="secondary"]
+.Kotlin
+----
+sourceSets.named("main") {
+    xjcExtraArgs.addAll("-Xequals", "-XhashCode", "-XtoString")
+}
+----
+
+The plugin will automatically switch on the JAXB extension mode if there are parameters starting with `-X`
+present, regardless of the `extension` option.
+
+[TIP]
+====
+The project-scoped `xjc` block also has an `extraArgs` property. Arguments added on this level will be used by
+the XJC builds for all source sets. If both `xjc.extraArgs` and the source set's `xjcExtraArgs` are used, then the
+global ones are added first, and the source-set-scoped ones afterwards.
+
+For example, you could use a combination of the `xjcClasspathGlobal` configuration and the global `extraArgs` to
+apply and configure a plugin for all source sets:
+
+[source,groovy,role="primary"]
+.Groovy
+----
+dependencies {
+    xjcClasspathGlobal 'org.jvnet.jaxb2_commons:jaxb2-basics:0.12.0'
+}
+
+xjc {
+    extraArgs.add '-Xequals', '-XhashCode', '-XtoString'
+}
+----
+
+[source,kotlin,role="secondary"]
+.Kotlin
+----
+dependencies {
+    "xjcClasspathGlobal"("org.jvnet.jaxb2_commons:jaxb2-basics:0.12.0")
+}
+
+xjc {
+    extraArgs.add("-Xequals", "-XhashCode", "-XtoString")
+}
+----
+====

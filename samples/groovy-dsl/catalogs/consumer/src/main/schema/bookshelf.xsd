@@ -1,0 +1,16 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:books="http://unbroken-dome.org/gradle-xjc-plugin/samples/books"
+            targetNamespace="http://unbroken-dome.org/gradle-xjc-plugin/samples/bookshelf">
+
+    <xsd:import namespace="http://unbroken-dome.org/gradle-xjc-plugin/samples/books"
+                schemaLocation="http://schemas.unbroken-dome.org/gradle-xjc-plugin/samples/books.xsd"/>
+
+    <xsd:element name="bookshelf">
+        <xsd:complexType>
+            <xsd:all>
+                <xsd:element name="books" type="books:booksType"/>
+            </xsd:all>
+        </xsd:complexType>
+    </xsd:element>
+
+</xsd:schema>

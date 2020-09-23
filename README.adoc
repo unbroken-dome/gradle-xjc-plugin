@@ -1,0 +1,55 @@
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+= Gradle XJC Plugin
+
+Invokes the `xjc` binding compiler from a Gradle build.
+
+
+== Features
+
+- Automatically enable XJC code generation for each source set in your project
+- support different versions of XJC through classpath isolation
+- producing and consuming episodes
+- catalogs with `maven:` and `classpath:` URI resolution (similar to maven-jaxb2-plugin)
+
+
+== Requirements
+
+- Gradle 5.6 or higher
+- JDK 1.8 or higher (when running Gradle)
+
+
+== Quick Start
+
+Apply the `org.unbroken-dome.xjc` plugin to your Gradle build script and add an appropriate
+dependency on the JAXB API:
+
+[source,kotlin]
+.build.gradle(.kts)
+----
+plugins {
+    id("org.unbroken-dome.xjc") version "2.0.0"
+}
+
+dependencies {
+    implementation("javax.xml.bind:jaxb-api:2.3.0")
+}
+----
+
+Put your schemas (`.xsd`), binding customization files (`.xjb`) and catalogs (`.cat`)
+into `src/main/schema`.
+
+That's it! The plugin will automatically invoke XJC to generate code from your schemas and include
+it the `main` Java compilation.
+
+
+== Further Documentation
+
+* https://unbroken-dome.github.io/projects/gradle-xjc-plugin/[User Manual]
+* https://unbroken-dome.github.io/projects/gradle-xjc-plugin/dokka/gradle-xjc-plugin/[API/DSL Documentation]

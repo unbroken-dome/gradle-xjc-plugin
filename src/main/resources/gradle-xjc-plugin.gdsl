@@ -1,0 +1,17 @@
+contributor(context(ctype: 'org.gradle.api.Project', scriptType: 'gradle')) {
+    property name: 'xjc', type: 'org.unbrokendome.gradle.plugins.xjc.XjcExtension'
+    method name: 'xjc', params: [configureAction: 'org.gradle.api.Action<org.unbrokendome.gradle.plugins.xjc.XjcExtension>']
+}
+
+
+contributor(context(ctype: 'org.gradle.api.Project', scope: closureScope(isArg: true), scriptType: 'gradle')) {
+    if (enclosingCall('xjc')) {
+        delegatesTo findClass('org.unbrokendome.gradle.plugins.xjc.XjcExtension')
+    }
+}
+
+
+def sourceSetContext = context(ctype: 'org.gradle.api.tasks.SourceSet', scriptType: 'gradle')
+contributor(sourceSetContext) {
+    delegatesTo findClass('org.unbrokendome.gradle.plugins.xjc.XjcSourceSetConvention')
+}

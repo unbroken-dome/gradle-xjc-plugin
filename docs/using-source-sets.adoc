@@ -1,0 +1,75 @@
+= Using Source Sets
+
+Many Gradle Java projects use multiple
+link:https://docs.gradle.org/current/userguide/building_java_projects.html#sec:java_source_sets[source sets]. This
+includes the `main` source set for the project's production code, as well as the `test` source set for unit tests by
+default, and can easily be extended with additional, custom source sets in a Gradle build script.
+
+
+== Support for Multiple Source Sets
+
+The `org.unbroken-dome.xjc` plugin adds XJC functionality for _each_ source set in the project, both for existing
+source sets and source sets that are added after the plugin is applied.
+
+For each source set there will be a task of type `XjcGenerate` that will do the actual work of invoking XJC for
+the source set. You will rarely need to call this task directly, because the plugin already sets up task dependencies
+for `compileJava` so that the generated sources are ready before the compilation starts.
+
+
+== Customizing Paths
+
+By default, all XJC input files for a source set are expected in the `src/<name>/schema` directory, where `<name>`
+is the name of the source set. For example,
+
+- put XJC input files for the `main` source set into `src/main/schema`;
+- put XJC input files for the `test` source set into `src/test/schema`.
+
+If you would like to change the default subdirectory name from `schema` to something else, you can do this conveniently
+by setting the `xjcSrcDir` property on the project's global `xjc` extension. For example, to use the `xjc` subdirectory
+instead of `schema`:
+
+[source,groovy,role="primary"]
+.Groovy
+----
+xjc {
+    srcDirName = 'xjc'
+}
+----
+
+[source,kotlin,role="secondary"]
+.Kotlin
+----
+xjc {
+    srcDirName.set("xjc")
+}
+----
+
+Each group of input files (schemas, binding customizations, catalogs, and URL sources) is also made available
+on the source set as a
+link:https://docs.gradle.org/current/dsl/org.gradle.api.file.SourceDirectorySet.html#org.gradle.api.file.SourceDirectorySet[`SourceDirectorySet`]
+for further customization:
+
+- `xjcSchema` for schema files
+- `xjcBinding` for binding customization files
+- `xjcUrl` for files listing remote schema URLs
+- `xjcCatalog` for catalog files
+
+For example, to include another directory containing catalogs:
+
+[source,groovy,role="primary"]
+.Groovy
+----
+sourceSets {
+    main {
+        xjcCatalog.srcDir("custom/catalog/path")
+    }
+}
+----
+
+[source,kotlin,role="secondary"]
+.Kotlin
+----
+sourceSets.named("main") {
+    xjcCatalog.srcDir("custom/catalog/path")
+}
+----

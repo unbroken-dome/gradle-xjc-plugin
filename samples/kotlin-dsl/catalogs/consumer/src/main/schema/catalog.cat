@@ -1,0 +1,5 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+    <rewriteSystem
+        systemIdStartString="http://schemas.unbroken-dome.org/gradle-xjc-plugin/samples/"
+        rewritePrefix="classpath:schema/"/>
+</catalog>
