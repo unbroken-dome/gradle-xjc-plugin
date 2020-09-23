@@ -1,0 +1,47 @@
+= Quick Start
+
+Apply the `org.unbroken-dome.xjc` plugin to your Gradle project:
+
+[source,groovy,role="primary",subs="+attributes"]
+.Groovy
+----
+plugins {
+    id 'org.unbroken-dome.xjc' version '{project-version}'
+}
+----
+
+[source,kotlin,role="secondary",subs="+attributes"]
+.Kotlin
+----
+plugins {
+    id("org.unbroken-dome.xjc") version "{project-version}"
+}
+----
+
+Put your XJC source files into `src/main/schema`. This includes XML schema files (extension `.xsd`),
+binding customizations (extension `.xjb`) and catalog files (extension `.cat`).
+
+Add a dependency on `jaxb-api` to the `implementation` configuration of your source set.
+
+[source,groovy,role="primary",subs="+attributes"]
+.Groovy
+----
+dependencies {
+    implementation 'javax.xml.bind:jaxb-api:2.3.0'
+}
+----
+
+[source,kotlin,role="secondary",subs="+attributes"]
+.Kotlin
+----
+dependencies {
+    implementation("javax.xml.bind:jaxb-api:2.3.0")
+}
+----
+
+TIP: If you are developing a link:https://docs.gradle.org/current/userguide/java_library_plugin.html[Java library],
+and the generated classes should be part of the library's public API, then you should use the `api` configuration
+instead.
+
+Now, whenever the project's sources are built, XJC will automatically be invoked to generate Java files and
+include them in the compilation.

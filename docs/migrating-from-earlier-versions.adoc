@@ -1,0 +1,16 @@
+= Migrating from Earlier Versions
+
+Version 1.x of this plugin was centered around the `XjcGenerate` task, which was automatically
+created only for the `main` source set.
+
+In version 2.0, most of the configuration has moved to the `xjc` DSL block in the project or the
+source set extension (properties on the source set starting with `xjc`), and XJC is enabled for all
+source sets automatically. You will rarely need to touch the `XjcGenerate` task directly with the new
+plugin version.
+
+In many XJC scenarios, no further configuration is necessary at all, beyond applying the plugin and
+adding a dependency to the JAXB API.
+
+Since the interface to XJC has not changed much, the available properties have stayed mostly the
+same, and it should not be difficult to figure out how to move them to the `xjc` block or the source set.
+Check the <<Controlling XJC Behavior>> section for a complete list of available properties.

@@ -1,0 +1,29 @@
+= Gradle XJC Plugin
+:revnumber: {project-version}
+:doctype: book
+:toc: left
+:icons: font
+:sectanchors:
+
+This Gradle plugin allows integrating link:https://docs.oracle.com/javase/8/docs/technotes/tools/unix/xjc.html[XJC]
+code generation into a Gradle build.
+
+include::prerequisites.adoc[leveloffset=1]
+
+include::quickstart.adoc[leveloffset=1]
+
+include::using-source-sets.adoc[leveloffset=1]
+
+include::remote-schema-locations.adoc[leveloffset=1]
+
+include::xjc-versions.adoc[leveloffset=1]
+
+include::controlling-xjc-behavior.adoc[leveloffset=1]
+
+include::using-xjc-plugins.adoc[leveloffset=1]
+
+include::using-episodes.adoc[leveloffset=1]
+
+include::working-with-catalogs.adoc[leveloffset=1]
+
+include::migrating-from-earlier-versions.adoc[leveloffset=1]

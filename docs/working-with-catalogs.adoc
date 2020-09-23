@@ -1,0 +1,143 @@
+= Working with Catalogs
+
+Catalogs can be used to map the URI of an imported schema (specified using `<xsd:import>`) to an actual URL or file
+from where it can be read. This is especially useful if the imported URI is only symbolic, or you cannot
+(or do not want to) change the importing schema.
+
+Catalog files may be written in any of the formats understood by the
+link:http://xerces.apache.org/xml-commons/components/resolver/[Apache Commons XML Resolver], including OASIS TR9401
+and OASIS XML Catalogs.
+
+Catalog files located at `src/<sourceSetName>/schema` with the extension `.cat` are picked up automatically. If your
+files follow a different convention, you can modify the `xjcCatalog` source directory set to suit your needs:
+
+[source,groovy,role="primary"]
+.Groovy
+----
+sourceSets {
+    main {
+        xjcCatalog {
+            // pick up catalogs from a custom directory
+            srcDir 'custom/catalog/path'
+            // use the .catalog file extension
+            include '**/*.catalog'
+        }
+    }
+}
+----
+
+[source,kotlin,role="secondary"]
+.Kotlin
+----
+sourceSets.named("main") {
+    xjcCatalog {
+        // pick up catalogs from a custom directory
+        srcDir("custom/catalog/path")
+        // use the .catalog file extension
+        include("**/*.catalog")
+    }
+}
+----
+
+
+In the catalog file, the following directives are most useful:
+
+- `system` to map one URI to another;
+- `rewriteSystem` to map a group of URIs by exchanging a prefix
+
+[source,xml]
+.catalog.cat
+----
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+    <rewriteSystem
+        systemIdStartString="http://schemas.example.com/"
+        rewritePrefix="http://www.example.com/etc/schemas/"/>
+</catalog>
+----
+
+
+== The `classpath:` and `maven:` URI Schemes
+
+This plugin supports two special URI schemes in catalogs, the `classpath:` and `maven:` scheme. They are inspired
+(and largely compatible) with the [JAXB2 Maven Plugin](https://github.com/highsource/maven-jaxb2-plugin), in order
+to simplify a migration from Maven to Gradle in projects that use XJC code generation.
+
+=== The `classpath:` URI scheme
+
+The `classpath:` scheme interprets the rest of the URI as the path to a classpath resource. This is especially
+useful for multi-step code generation where a library JAR contains the schema, an episode file and generated code:
+
+[source,groovy,role="primary"]
+.Groovy
+----
+dependencies {
+    implementation 'com.example:my-model:1.2.3'
+    xjcEpisode configurations['compileClasspath']
+}
+----
+
+[source,kotlin,role="secondary"]
+.Kotlin
+----
+dependencies {
+    implementation("com.example:my-model:1.2.3")
+    "xjcEpisode"(configurations["compileClasspath"])
+}
+----
+
+Assuming the `my-model` JAR contains an XSD resource at `schemas/my-model.xsd`, you could write
+the catalog file as follows:
+
+[source,xml]
+.catalog.cat
+----
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+    <rewriteSystem
+        systemIdStartString="http://schemas.example.com/"
+        rewritePrefix="classpath:schemas/"/>
+</catalog>
+----
+
+Then, reference it in the importing schema:
+
+[source,xml]
+.schema.xsd
+----
+<!-- The schemaLocation will be mapped to the JAR classpath resource thanks to the catalog -->
+<xsd:import namespace="http://schemas.example.com/mymodel"
+            schemaLocation="http://schemas.example.com/my-model.xsd" />
+----
+
+All JARs in the special configuration `xjcCatalogResolution` are taken into account, which inherits all dependencies
+from `compileClasspath` by default. You can add additional dependencies to this configuration to enable catalog
+resolution from these artifacts.
+
+[NOTE]
+====
+When using multiple source sets with XJC, there will be a separate dependency configuration for each source set in
+the project. For the `main` sourceSet, the configuration is called `xjcCatalogResolution` as described above. For other
+source sets it will be called `<name>XjcCatalogResolution`, for example, `testXjcCatalogResolution` for the `test`
+source set.
+
+In addition, the plugin creates a configuration called `xjcCatalogResolutionGlobal`, which does not have any
+dependencies by default. All other catalog resolution configurations extend this one, so you can add any dependencies
+that should be resolvable for all source sets to `xjcCatalogResolutionGlobal`.
+====
+
+
+=== The `maven:` URI scheme
+
+The `maven:` scheme works similar to the `classpath:` scheme, but allows you to specify additional Maven coordinates
+to filter the dependency. The URI syntax is:
+
+----
+maven:<groupId>:<artifactId>:<extension>:<classifier>:<version>!path/to/resource
+----
+
+where all parts are optional, and trailing colons may be omitted.
+
+Note that in contrast to the Maven JAXB2 Plugin, the dependency is _not_ resolved ad-hoc: it must still be
+declared in the `xjcCatalogResolution` configuration (or inherited through other configurations).
+
+You can think of the `maven:` scheme as an extension to `classpath:` with a filter for the JARs to be searched
+for resources. (In fact, `classpath:` is defined as an alias for `maven::!`.)

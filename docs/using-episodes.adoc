@@ -1,0 +1,81 @@
+= Using Episodes
+
+An episode file is a special file that contains information about the generated classes and can be imported by
+subsequent xjc runs to re-use the generated code. If the episode file is placed in the "magic" location
+`META-INF/sun-jaxb.episode` inside a JAR file, it can be picked up automatically by dependent builds. This is
+convenient when an import hierarchy of XML schemas should be reflected in a dependency hierarchy of JARs.
+
+== Producing an Episode File
+
+To instruct XJC to produce an episode file, simply set the `xjcGenerateEpisode` property on the source set to `true`:
+
+[source,groovy,role="primary"]
+.Groovy
+----
+sourceSets {
+    main {
+        xjcGenerateEpisode = true
+    }
+}
+----
+
+[source,kotlin,role="secondary"]
+.Kotlin
+----
+sourceSets.named("main") {
+    xjcGenerateEpisode.set(true)
+}
+----
+
+The output of the XJC generation will now include an episode file at `META-INF/sun-jaxb.episode`, which is set up
+as an input to the source set's `resources`. As a consequence, this episode file will also end up in the JAR when
+generated from the `main` source set.
+
+
+== Consuming Episodes
+
+Episode files are not consumed directly, but through JARs that contain them under `META-INF/sun-jaxb.episode`.
+To specify dependencies that contain episodes to be imported into the XJC build, add the libraries containing them
+to the `xjcEpisode` configuration:
+
+[source,groovy,role="primary"]
+.Groovy
+----
+dependencies {
+    xjcEpisode 'org.example:my-model:1.2.3'
+}
+----
+
+[source,kotlin,role="secondary"]
+.Kotlin
+----
+dependencies {
+    "xjcEpisode"("org.example:my-model:1.2.3")
+}
+----
+
+TIP: Each source set will get its own episode dependency configuration. For the `main` source set, this configuration
+is called `xjcEpisode`; for other source sets it will be called `<name>XjcEpisode`. For example, to specify episode
+dependencies for the `test` source set, use the `testXjcEpisode` configuration.
+
+These dependencies should resolve to JAR files; if they contain a `META-INF/sun-jaxb.episode` entry it will be
+imported by the current `xjc` invocation. If they don't contain such a file they are simply ignored, so it is safe
+to pass a larger set of dependencies and have them scanned for episodes.
+
+For example, you might simply want to scan the entire `compileClasspath` for any JARs containing episodes:
+
+[source,groovy,role="primary"]
+.Groovy
+----
+dependencies {
+    xjcEpisode configurations['compileClasspath']
+}
+----
+
+[source,kotlin,role="secondary"]
+.Kotlin
+----
+dependencies {
+    "xjcEpisode"(configurations["compileClasspath"])
+}
+----

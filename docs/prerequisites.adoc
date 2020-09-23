@@ -1,0 +1,7 @@
+= Prerequisites
+
+You need at least the following:
+
+* Gradle 5.6 or higher
+
+* JDK 8 or higher (for running Gradle)
