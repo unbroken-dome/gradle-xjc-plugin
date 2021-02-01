@@ -56,7 +56,7 @@ invoking XJC, with the following dependencies:
 | `com.sun.xml.bind:jaxb-xjc:2.3.3`
 
 | 3.0
-| `com.sun.xml.bind:jaxb-xjc:3.0.0-M4`
+| `com.sun.xml.bind:jaxb-xjc:3.0.0`
 |===
 
 
@@ -72,7 +72,7 @@ For example:
 .Groovy
 ----
 dependencies {
-    xjcTool 'com.sun.xml.bind:jaxb-xjc:3.0.0-M4'
+    xjcTool 'com.sun.xml.bind:jaxb-xjc:3.0.0'
 }
 ----
 
@@ -80,6 +80,6 @@ dependencies {
 .Kotlin
 ----
 dependencies {
-    "xjcTool"("com.sun.xml.bind:jaxb-xjc:3.0.0-M4")
+    "xjcTool"("com.sun.xml.bind:jaxb-xjc:3.0.0")
 }
 ----
