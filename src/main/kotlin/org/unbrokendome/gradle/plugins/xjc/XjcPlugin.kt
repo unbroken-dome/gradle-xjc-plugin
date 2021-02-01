@@ -39,8 +39,8 @@ class XjcPlugin : Plugin<Project> {
                 "com.sun.xml.bind:jaxb-xjc:2.3.3"
             ),
             "3.0" to listOf(
-                "com.sun.xml.bind:jaxb-xjc:3.0.0-M4",
-                "com.sun.xml.bind:jaxb-impl:3.0.0-M4"
+                "com.sun.xml.bind:jaxb-xjc:3.0.0",
+                "com.sun.xml.bind:jaxb-impl:3.0.0"
             )
         )
     }
