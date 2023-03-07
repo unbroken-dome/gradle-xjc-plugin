@@ -56,7 +56,11 @@ invoking XJC, with the following dependencies:
 | `com.sun.xml.bind:jaxb-xjc:2.3.3`
 
 | 3.0
-| `com.sun.xml.bind:jaxb-xjc:3.0.0-M4`
+| `com.sun.xml.bind:jaxb-xjc:3.0.2`
+  `com.sun.xml.bind:jaxb-core:3.0.2`
+  `com.sun.xml.bind:jaxb-impl:3.0.2`
+  `jakarta.xml.bind:jakarta.xml.bind-api:3.0.1`
+
 |===
 
 
@@ -66,13 +70,20 @@ You can also manually configure the classpath for invoking XJC by adding depende
 to the `xjcTool` configuration. As soon as this configuration contains any dependencies,
 the defaults will back away, and the `xjc.xjcVersion` property will have no effect.
 
+You should specify at least `jaxb-xjc` it is possible its dependencies are included
+transitively or you can include them with additional `xjcTool` directives.
+
 For example:
 
 [source,groovy,role="primary"]
 .Groovy
 ----
 dependencies {
-    xjcTool 'com.sun.xml.bind:jaxb-xjc:3.0.0-M4'
+    xjcTool 'com.sun.xml.bind:jaxb-xjc:3.0.2'
+    // Optional explicit version set:
+    xjcTool 'com.sun.xml.bind:jaxb-core:3.0.2'
+    xjcTool 'com.sun.xml.bind:jaxb-impl:3.0.2'
+    xjcTool 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
 }
 ----
 
@@ -80,6 +91,10 @@ dependencies {
 .Kotlin
 ----
 dependencies {
-    "xjcTool"("com.sun.xml.bind:jaxb-xjc:3.0.0-M4")
+    "xjcTool"("com.sun.xml.bind:jaxb-xjc:3.0.2")
+    // Optional explicit version set:
+    "xjcTool"("com.sun.xml.bind:jaxb-core:3.0.2")
+    "xjcTool"("com.sun.xml.bind:jaxb-impl:3.0.2")
+    "xjcTool"("jakarta.xml.bind:jakarta.xml.bind-api:3.0.1")
 }
 ----
