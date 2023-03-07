@@ -72,7 +72,7 @@ useful for multi-step code generation where a library JAR contains the schema, a
 ----
 dependencies {
     implementation 'com.example:my-model:1.2.3'
-    xjcEpisode configurations['compileClasspath']
+    xjcEpisodes configurations['compileClasspath']
 }
 ----
 
@@ -81,7 +81,7 @@ dependencies {
 ----
 dependencies {
     implementation("com.example:my-model:1.2.3")
-    "xjcEpisode"(configurations["compileClasspath"])
+    "xjcEpisodes"(configurations["compileClasspath"])
 }
 ----
 

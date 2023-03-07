@@ -36,13 +36,13 @@ generated from the `main` source set.
 
 Episode files are not consumed directly, but through JARs that contain them under `META-INF/sun-jaxb.episode`.
 To specify dependencies that contain episodes to be imported into the XJC build, add the libraries containing them
-to the `xjcEpisode` configuration:
+to the `xjcEpisodes` configuration:
 
 [source,groovy,role="primary"]
 .Groovy
 ----
 dependencies {
-    xjcEpisode 'org.example:my-model:1.2.3'
+    xjcEpisodes 'org.example:my-model:1.2.3'
 }
 ----
 
@@ -50,13 +50,13 @@ dependencies {
 .Kotlin
 ----
 dependencies {
-    "xjcEpisode"("org.example:my-model:1.2.3")
+    "xjcEpisodes"("org.example:my-model:1.2.3")
 }
 ----
 
 TIP: Each source set will get its own episode dependency configuration. For the `main` source set, this configuration
-is called `xjcEpisode`; for other source sets it will be called `<name>XjcEpisode`. For example, to specify episode
-dependencies for the `test` source set, use the `testXjcEpisode` configuration.
+is called `xjcEpisodes`; for other source sets it will be called `<name>XjcEpisodes`. For example, to specify episode
+dependencies for the `test` source set, use the `testXjcEpisodes` configuration.
 
 These dependencies should resolve to JAR files; if they contain a `META-INF/sun-jaxb.episode` entry it will be
 imported by the current `xjc` invocation. If they don't contain such a file they are simply ignored, so it is safe
@@ -68,7 +68,7 @@ For example, you might simply want to scan the entire `compileClasspath` for any
 .Groovy
 ----
 dependencies {
-    xjcEpisode configurations['compileClasspath']
+    xjcEpisodes configurations['compileClasspath']
 }
 ----
 
@@ -76,6 +76,6 @@ dependencies {
 .Kotlin
 ----
 dependencies {
-    "xjcEpisode"(configurations["compileClasspath"])
+    "xjcEpisodes"(configurations["compileClasspath"])
 }
 ----
