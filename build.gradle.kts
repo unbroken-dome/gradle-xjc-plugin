@@ -13,7 +13,7 @@ val kotlinVersion: String by extra
 
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 
