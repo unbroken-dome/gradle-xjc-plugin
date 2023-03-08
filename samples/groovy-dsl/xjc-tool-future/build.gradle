@@ -1,0 +1,27 @@
+plugins {
+    id('java')
+    id('org.unbroken-dome.xjc') version '2.1.0-SNAPSHOT'
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+
+xjc {
+    xjcVersion = '99.0'
+    //// This is testing build failure and error output due to not configuring:
+    //xjcVersionUnsupportedStrategy = 'auto-resolve'
+}
+
+
+dependencies {
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
+
+    // For this integration test to be JDK8 compatible this needs to be 3.x or older
+    // But doing that means that tests would never demonstrate itself working at the
+    // time the feature was added, as 3.x was supported already, so we only perform
+    // this test in JDK11+ while we don't yet support 4.x.
+    xjcTool 'com.sun.xml.bind:jaxb-xjc:4.0.2'
+}

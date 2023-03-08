@@ -45,6 +45,7 @@ abstract class XjcGenerate
             "2.3" to "org.unbrokendome.gradle.plugins.xjc.work.xjc23.XjcGeneratorWorkAction",
             "3.0" to "org.unbrokendome.gradle.plugins.xjc.work.xjc30.XjcGeneratorWorkAction"
         )
+        private val HIGHEST_SUPPORTED_VERSION = WorkActionClassNamesByVersion.keys.max()
     }
 
 
@@ -195,8 +196,16 @@ abstract class XjcGenerate
             ?: throw IllegalStateException("Could not find a suitable XJC implementation on the tool classpath")
 
         val xjcVersion = toolManifest.mainAttributes[ManifestAttributes.SpecificationVersion]
-        val workActionClassName = WorkActionClassNamesByVersion[xjcVersion]
-            ?: throw IllegalStateException("Cannot handle XJC version: $xjcVersion")
+        var resolvedWorkActionClassName = WorkActionClassNamesByVersion[xjcVersion]
+        if(resolvedWorkActionClassName == null) {
+            resolvedWorkActionClassName = WorkActionClassNamesByVersion[HIGHEST_SUPPORTED_VERSION]
+                                        ?: throw IllegalStateException("Cannot handle XJC version: $xjcVersion")
+            // This creates a strategy to always warn the user and proceed with best effort
+            // We should force the user to set an option to active this best effort, forcing a configuration decision
+            // xjc.xjcVersionUnsupportedStrategy ?
+            logger.warn("Version {} XJC is unsupported, using strategy for highest supported version {}", xjcVersion, HIGHEST_SUPPORTED_VERSION)
+        }
+        val workActionClassName = resolvedWorkActionClassName
 
         @Suppress("UNCHECKED_CAST")
         val workActionClass = Class.forName(workActionClassName)
