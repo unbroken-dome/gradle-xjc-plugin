@@ -21,8 +21,8 @@ Invokes the `xjc` binding compiler from a Gradle build.
 
 == Requirements
 
-- Gradle 5.6 or higher
-- JDK 1.8 or higher (when running Gradle)
+- Gradle 6.8 or higher
+- JDK 11 or higher (when running Gradle)
 
 
 == Quick Start
@@ -34,7 +34,7 @@ dependency on the JAXB API:
 .build.gradle(.kts)
 ----
 plugins {
-    id("org.unbroken-dome.xjc") version "2.0.0"
+    id("org.unbroken-dome.xjc") version "3.0.0"
 }
 
 dependencies {

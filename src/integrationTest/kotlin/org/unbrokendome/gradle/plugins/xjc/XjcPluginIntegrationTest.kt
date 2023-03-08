@@ -2,17 +2,10 @@ package org.unbrokendome.gradle.plugins.xjc
 
 import assertk.all
 import assertk.assertThat
-import assertk.assertions.contains
 import assertk.assertions.containsAll
-import assertk.assertions.extracting
-import assertk.assertions.isFile
-import jdk.nashorn.internal.runtime.regexp.joni.constants.AsmConstants
+import java.io.File
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.platform.commons.annotation.Testable
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.ClassVisitor
-import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes
 import org.unbrokendome.gradle.plugins.xjc.reflection.MethodInfo
 import org.unbrokendome.gradle.plugins.xjc.reflection.URLClassLoader
 import org.unbrokendome.gradle.plugins.xjc.reflection.loadClassInfo
@@ -25,8 +18,6 @@ import org.unbrokendome.gradle.plugins.xjc.testutil.assertions.resolve
 import org.unbrokendome.gradle.plugins.xjc.testutil.assertions.task
 import org.unbrokendome.gradle.plugins.xjc.testutil.assertions.withJarFile
 import org.unbrokendome.gradle.plugins.xjc.testutil.runGradle
-import java.io.File
-import java.net.URLClassLoader
 
 
 @UseSampleProject("xjc-plugin")
