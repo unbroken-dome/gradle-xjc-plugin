@@ -49,6 +49,7 @@ object XjcPluginTest : Spek({
             assertThat(project)
                 .hasExtension<XjcExtension>().all {
                     prop(XjcExtension::xjcVersion).hasValueEqualTo(XjcExtension.DEFAULT_XJC_VERSION)
+                    prop(XjcExtension::xjcVersionUnsupportedStrategy).hasValueEqualTo(XjcExtension.DEFAULT_XJC_VERSION_UNSUPPORTED_STRATEGY)
                     prop(XjcExtension::srcDirName).hasValueEqualTo(XjcExtension.DEFAULT_SRC_DIR_NAME)
                     prop(XjcExtension::encoding).hasValueEqualTo("UTF-8")
                     prop(XjcExtension::strictCheck).isTrue()
@@ -65,6 +66,7 @@ object XjcPluginTest : Spek({
         it("should populate xjc DSL extension from project properties") {
             val extra = project.requiredExtension<ExtraPropertiesExtension>()
             extra.set("xjc.xjcVersion", "3.0")
+            extra.set("xjc.xjcVersionUnsupportedStrategy", "default")
             extra.set("xjc.srcDirName", "xjc")
             extra.set("xjc.targetVersion", "2.2")
             extra.set("xjc.encoding", "ISO-8859-1")
@@ -80,6 +82,7 @@ object XjcPluginTest : Spek({
             assertThat(project)
                 .hasExtension<XjcExtension>().all {
                     prop(XjcExtension::xjcVersion).hasValueEqualTo("3.0")
+                    prop(XjcExtension::xjcVersionUnsupportedStrategy).hasValueEqualTo("default")
                     prop(XjcExtension::srcDirName).hasValueEqualTo("xjc")
                     prop(XjcExtension::targetVersion).hasValueEqualTo("2.2")
                     prop(XjcExtension::encoding).hasValueEqualTo("ISO-8859-1")

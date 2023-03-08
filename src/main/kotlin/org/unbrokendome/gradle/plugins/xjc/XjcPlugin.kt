@@ -73,6 +73,7 @@ class XjcPlugin : Plugin<Project> {
             (task as XjcGeneratorOptions).setFrom(xjcExtension)
             task.toolClasspath.setFrom(toolClasspathConfiguration)
             task.extraArgs.addAll(xjcExtension.extraArgs)
+            task.xjcVersionUnsupportedStrategy.set(xjcExtension.xjcVersionUnsupportedStrategy)
         }
 
         project.plugins.withType(JavaBasePlugin::class.java) {
