@@ -2,6 +2,7 @@ package org.unbrokendome.gradle.plugins.xjc
 
 import assertk.all
 import assertk.assertThat
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.platform.commons.annotation.Testable
@@ -19,7 +20,7 @@ import java.io.File
 
 abstract class AbstractBasicIntegrationTest {
 
-    fun test(runner: GradleRunner, projectDir: File, projectName: String) {
+    fun test(runner: GradleRunner, projectDir: File, projectName: String): BuildResult {
         val buildResult = runner.runGradle("build")
 
         assertThat(buildResult).all {
@@ -36,5 +37,7 @@ abstract class AbstractBasicIntegrationTest {
                     "org/unbroken_dome/gradle_xjc_plugin/samples/books/ObjectFactory.class"
                 )
             }
+
+        return buildResult
     }
 }
