@@ -43,7 +43,8 @@ abstract class XjcGenerate
         private val WorkActionClassNamesByVersion = mapOf(
             "2.2" to "org.unbrokendome.gradle.plugins.xjc.work.xjc22.XjcGeneratorWorkAction",
             "2.3" to "org.unbrokendome.gradle.plugins.xjc.work.xjc23.XjcGeneratorWorkAction",
-            "3.0" to "org.unbrokendome.gradle.plugins.xjc.work.xjc30.XjcGeneratorWorkAction"
+            "3.0" to "org.unbrokendome.gradle.plugins.xjc.work.xjc30.XjcGeneratorWorkAction",
+            "4.0" to "org.unbrokendome.gradle.plugins.xjc.work.xjc40.XjcGeneratorWorkAction"
         )
     }
 

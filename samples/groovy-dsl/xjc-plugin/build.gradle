@@ -1,11 +1,11 @@
 plugins {
     id('java')
-    id('org.unbroken-dome.xjc') version '2.0.0'
+    id('org.unbroken-dome.xjc') version '3.0.0'
 }
 
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 

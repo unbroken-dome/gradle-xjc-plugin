@@ -8,7 +8,6 @@ import org.gradle.api.internal.HasConvention
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.util.GradleVersion
-import org.unbrokendome.gradle.plugins.xjc.internal.GRADLE_VERSION_6_1
 import org.unbrokendome.gradle.plugins.xjc.internal.MIN_REQUIRED_GRADLE_VERSION
 
 
@@ -41,6 +40,9 @@ class XjcPlugin : Plugin<Project> {
             "3.0" to listOf(
                 "com.sun.xml.bind:jaxb-xjc:3.0.0-M4",
                 "com.sun.xml.bind:jaxb-impl:3.0.0-M4"
+            ),
+            "4.0" to listOf(
+                "com.sun.xml.bind:jaxb-xjc:4.0.2"
             )
         )
     }
@@ -129,14 +131,8 @@ class XjcPlugin : Plugin<Project> {
 
                 val xjcOutputDir = generateTask.flatMap { it.outputDirectory }
 
-                if (GradleVersion.current() >= GRADLE_VERSION_6_1) {
-                    xjcSourceSetConvention.xjcSchema.destinationDirectory.set(xjcOutputDir)
-                    sourceSet.java.srcDir(xjcOutputDir)
-                } else {
-                    xjcSourceSetConvention.xjcSchema.outputDir =
-                        project.file(generateTask.flatMap { it.outputDirectory })
-                    sourceSet.java.srcDir(xjcOutputDir)
-                }
+                xjcSourceSetConvention.xjcSchema.destinationDirectory.set(xjcOutputDir)
+                sourceSet.java.srcDir(xjcOutputDir)
 
                 sourceSet.resources.srcDir(
                     generateTask.flatMap { it.episodeOutputDirectory }
