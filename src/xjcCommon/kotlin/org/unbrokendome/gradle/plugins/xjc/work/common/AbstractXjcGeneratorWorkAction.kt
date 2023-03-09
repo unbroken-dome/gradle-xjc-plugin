@@ -41,11 +41,38 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
         }
     }
 
+    protected open fun checkApiInClassPath() {
+        val javax_className = "javax.xml.bind.JAXBContextFactory"
+        val jakarta_className = "jakarta.xml.bind.JAXBContextFactory"
+
+        var foundJavax = false
+        var foundJakarta = false
+        try {
+            Class.forName(javax_className)
+            foundJavax = true
+        } catch (_: ClassNotFoundException) {
+        }
+        try {
+            Class.forName(jakarta_className)
+            foundJakarta = true
+        } catch (_: ClassNotFoundException) {
+        }
+
+        if(!foundJavax && !foundJakarta)
+            logger.warn("Unable to locate expected class {} or {} on XJC visible ClassPath, maybe you have used one or more xjcTool terms and need to also include *.bind-api in an additional xjcTool option.",
+                javax_className, jakarta_className)
+
+        if(foundJavax && foundJakarta)
+            logger.warn("Found both {} and {} on XJC visible ClassPath, usually you only need one of these.",
+                javax_className, jakarta_className)
+    }
 
     protected open fun doExecute(options: Options) {
 
         val listener = LoggingXjcListener()
         val errorReceiver = ErrorReceiverFilter(listener)
+
+        checkApiInClassPath()
 
         val model = ModelLoader.load(options, JCodeModel(), errorReceiver)
             ?: throw Exception("Parse failed")
