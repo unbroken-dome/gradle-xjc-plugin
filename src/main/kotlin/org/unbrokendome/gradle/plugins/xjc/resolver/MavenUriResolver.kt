@@ -49,10 +49,12 @@ class MavenUriResolver(
                 matchingArtifacts.map { it.file.toURI().toURL() }.toList().toTypedArray()
             )
             val resourceName = path.removePrefix("/")
-            classLoader.getResource(resourceName)?.toURI()
-                ?: throw IllegalArgumentException(
-                    "Could not resolve resource \"$resourceName\" from classpath: ${classLoader.urLs.toList()}"
-                )
+            classLoader.use {
+                classLoader.getResource(resourceName)?.toURI()
+                    ?: throw IllegalArgumentException(
+                        "Could not resolve resource \"$resourceName\" from classpath: ${classLoader.urLs.toList()}"
+                    )
+            }
 
         } else {
             matchingArtifacts.first()
