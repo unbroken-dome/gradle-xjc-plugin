@@ -33,7 +33,7 @@ class XjcPlugin : Plugin<Project> {
                 "com.sun.xml.bind:jaxb-xjc:2.2.11",
                 "com.sun.xml.bind:jaxb-core:2.2.11",
                 "com.sun.xml.bind:jaxb-impl:2.2.11",
-                "javax.xml.bind:jaxb-api:2.2.11"
+                "javax.xml.bind:jaxb-api:2.2.12"
             ),
             "2.3" to listOf(
                 "com.sun.xml.bind:jaxb-xjc:2.3.8",
