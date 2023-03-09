@@ -43,7 +43,7 @@ object XjcGenerateTest : Spek({
             with(project.requiredExtension<XjcExtension>()) {
                 targetVersion.set("XYZ")
                 encoding.set("ISO-8859-1")
-                docLocale.set(Locale.ITALIAN)
+                docLocale.set(Locale.ITALIAN.toString())
                 strictCheck.set(false)
                 packageLevelAnnotations.set(false)
                 noFileHeader.set(false)
@@ -56,7 +56,7 @@ object XjcGenerateTest : Spek({
             assertThat(task, "task").all {
                 prop(XjcGenerate::targetVersion).hasValueEqualTo("XYZ")
                 prop(XjcGenerate::encoding).hasValueEqualTo("ISO-8859-1")
-                prop(XjcGenerate::docLocale).hasValueEqualTo(Locale.ITALIAN)
+                prop(XjcGenerate::docLocale).hasValueEqualTo(Locale.ITALIAN.toString())
                 prop(XjcGenerate::strictCheck).isFalse()
                 prop(XjcGenerate::packageLevelAnnotations).isFalse()
                 prop(XjcGenerate::noFileHeader).isFalse()

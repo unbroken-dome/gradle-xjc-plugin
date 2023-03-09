@@ -10,7 +10,6 @@ import org.unbrokendome.gradle.plugins.xjc.internal.XjcGeneratorFlags
 import org.unbrokendome.gradle.plugins.xjc.internal.booleanProviderFromProjectProperty
 import org.unbrokendome.gradle.plugins.xjc.internal.providerFromProjectProperty
 import java.util.EnumSet
-import java.util.Locale
 
 
 /**
@@ -42,7 +41,7 @@ interface XjcGeneratorOptions {
      * the JVM's default locale to the given one before calling XJC, and switch it back afterwards.
      */
     @get:[Input Optional]
-    val docLocale: Property<Locale>
+    val docLocale: Property<String>
 
     /**
      * If `true`, perform strict schema validation.
@@ -126,7 +125,7 @@ internal fun XjcGeneratorOptions.setFromProjectProperties(project: Project) = ap
         project.providerFromProjectProperty("xjc.encoding", "UTF-8")
     )
     docLocale.set(
-        project.providerFromProjectProperty("xjc.docLocale", Locale::forLanguageTag)
+        project.providerFromProjectProperty("xjc.docLocale")
     )
     strictCheck.set(
         project.booleanProviderFromProjectProperty("xjc.strictCheck", true)

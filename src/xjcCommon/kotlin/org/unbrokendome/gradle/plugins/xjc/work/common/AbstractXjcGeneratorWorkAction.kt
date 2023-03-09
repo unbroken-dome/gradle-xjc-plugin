@@ -17,6 +17,7 @@ import org.unbrokendome.gradle.plugins.xjc.resolver.MavenUriResolver
 import org.xml.sax.InputSource
 import java.net.URI
 import java.net.URISyntaxException
+import java.util.Locale
 
 
 abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParameters> {
@@ -32,7 +33,7 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
 
         val docLocale = parameters.docLocale.orNull
         if (docLocale != null) {
-            withDefaultLocale(docLocale) {
+            withDefaultLocale(Locale.forLanguageTag(docLocale)) {
                 doExecute(options)
             }
         } else {

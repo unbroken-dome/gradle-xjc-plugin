@@ -15,7 +15,7 @@ The following properties are available in the project-scoped `xjc` block, and ap
 | `-target`
 | (use latest version)
 
-| `docLocale` (`java.util.Locale`)
+| `docLocale` (`String`)
 | The locale to be used when running XJC. This may influence the language of documentation comments in XJC-generated files.
 | (no equivalent)
 | JVM default locale

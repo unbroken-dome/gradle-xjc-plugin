@@ -86,7 +86,7 @@ object XjcPluginTest : Spek({
                     prop(XjcExtension::srcDirName).hasValueEqualTo("xjc")
                     prop(XjcExtension::targetVersion).hasValueEqualTo("2.2")
                     prop(XjcExtension::encoding).hasValueEqualTo("ISO-8859-1")
-                    prop(XjcExtension::docLocale).hasValueEqualTo(Locale.ITALIAN)
+                    prop(XjcExtension::docLocale).hasValueEqualTo(Locale.ITALIAN.toString())
                     prop(XjcExtension::strictCheck).isFalse()
                     prop(XjcExtension::packageLevelAnnotations).isFalse()
                     prop(XjcExtension::noFileHeader).isFalse()
