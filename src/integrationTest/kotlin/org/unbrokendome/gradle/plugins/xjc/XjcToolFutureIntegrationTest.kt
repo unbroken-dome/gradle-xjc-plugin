@@ -18,8 +18,14 @@ import java.io.File
 @UseSampleProject("xjc-tool-future")
 class XjcToolFutureIntegrationTest : AbstractBasicIntegrationTest() {
 
-    @TestEachDslFlavor
-    @Testable
+    // Disabled to enable this test with we ideally need to supply an XJC
+    // Tool implementation that has a future version such as in the
+    // MANIFEST.MF:
+    //  Specification-Version: 98.0
+    // Maybe it is possible to achieve this in the sample project tree
+    //  and have gradle build a subproject before using it to run this test.
+    //@TestEachDslFlavor
+    //@Testable
     fun test(runner: GradleRunner, @GradleProjectDir projectDir: File) {
         Assumptions.assumeTrue(javaVersionAtLeast(11), "Requires JDK11 runtime or above due to the XJC Tool bytecode version requirement")
 
