@@ -11,6 +11,7 @@ internal object ManifestAttributes {
     val MainClass = Attributes.Name("Main-Class")
     val BundleSymbolicName = Attributes.Name("Bundle-SymbolicName")
     val SpecificationVersion = Attributes.Name("Specification-Version")
+    val ExtensionName = Attributes.Name("Extension-Name")
 }
 
 

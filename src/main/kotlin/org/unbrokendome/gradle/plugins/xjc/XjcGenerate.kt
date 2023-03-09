@@ -238,12 +238,15 @@ abstract class XjcGenerate
     private fun resolveXjcVersion(): String {
         val toolManifest = toolClasspath.findManifests()
             .singleOrNull { manifest ->
+                // pre XJC 2.3.x
+                val extensionName = manifest.mainAttributes[ManifestAttributes.ExtensionName]
+                // post XJC 2.3.0+
                 val bundleSymbolicName = manifest.mainAttributes[ManifestAttributes.BundleSymbolicName]
-                bundleSymbolicName == "com.sun.xml.bind.jaxb-xjc"
+                extensionName == "com.sun.tools.xjc" || bundleSymbolicName == "com.sun.xml.bind.jaxb-xjc"
             }
             ?: throw IllegalStateException("Could not find a suitable XJC implementation on the tool classpath, expecting: com.sun.xml.bind.jaxb-xjc")
 
-        val xjcVersionSpecificationVersion = toolManifest.mainAttributes[ManifestAttributes.SpecificationVersion]?.toString()
+        val xjcVersionSpecificationVersion = sanitizeSpecificationVersion(toolManifest.mainAttributes[ManifestAttributes.SpecificationVersion]?.toString())
         // Although this setting is called xjcVersionUnsupportedStrategy externally it is actually internally xjcVersionStrategy,
         //  it is named as it is to better reflect to the target audience the correct level of concern when configuring it.
         val xjcVersionStrategy = xjcVersionUnsupportedStrategy.get()
@@ -283,6 +286,10 @@ abstract class XjcGenerate
         }
 
         return resolvedWorkActionClassName
+    }
+
+    private fun sanitizeSpecificationVersion(s: String?): String? {
+        return s?.split(".")?.subList(0, 2)?.joinToString(".")    // "1.2.3-FOO" => "1.2"
     }
 
     private fun cleanOutputDirs(): Boolean {
