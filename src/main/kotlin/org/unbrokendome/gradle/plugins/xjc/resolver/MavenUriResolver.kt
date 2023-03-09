@@ -57,8 +57,13 @@ class MavenUriResolver(
             }
 
         } else {
-            matchingArtifacts.first()
-                .file.toURI()
+            val artifacts = matchingArtifacts.toList()
+            if(artifacts.size > 1) {
+                for((index,it) in artifacts.withIndex()) {
+                    logger.warn("MavenUriResolver multiple matching artifacts found, only index 0 is selected[{}]: {}", index, it)
+                }
+            }
+            artifacts[0].file.toURI()
         }
     }
 }
