@@ -36,7 +36,10 @@ class XjcPlugin : Plugin<Project> {
                 "javax.xml.bind:jaxb-api:2.2.11"
             ),
             "2.3" to listOf(
-                "com.sun.xml.bind:jaxb-xjc:2.3.3"
+                "com.sun.xml.bind:jaxb-xjc:2.3.8",
+                "com.sun.xml.bind:jaxb-core:2.3.0.1", // there is no later 2.3 version
+                "com.sun.xml.bind:jaxb-impl:2.3.8",  // or 2.3.3
+                "javax.xml.bind:jaxb-api:2.3.1"
             ),
             "2.4" to listOf(        // Supports JAXB -target 2.2  (and 2.1 and 2.0)
                 "com.sun.xml.bind:jaxb-xjc:2.4.0-b180830.0438",

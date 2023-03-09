@@ -60,7 +60,10 @@ dependencies {
     "xjc22CompileOnly"("javax.xml.bind:jaxb-api:2.2.11")
 
     "xjc23CompileOnly"(xjcCommon.output)
-    "xjc23CompileOnly"("com.sun.xml.bind:jaxb-xjc:2.3.3")
+    "xjc23CompileOnly"("com.sun.xml.bind:jaxb-xjc:2.3.8")
+    "xjc23CompileOnly"("com.sun.xml.bind:jaxb-core:2.3.0.1")
+    "xjc23CompileOnly"("com.sun.xml.bind:jaxb-impl:2.3.8")
+    "xjc23CompileOnly"("javax.xml.bind:jaxb-api:2.3.1")
 
     "xjc24CompileOnly"(xjcCommon.output)
     "xjc24CompileOnly"("com.sun.xml.bind:jaxb-xjc:2.4.0-b180830.0438")
