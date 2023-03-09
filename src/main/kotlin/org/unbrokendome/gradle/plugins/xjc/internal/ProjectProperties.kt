@@ -2,6 +2,7 @@ package org.unbrokendome.gradle.plugins.xjc.internal
 
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
+import java.io.Serializable
 
 
 internal fun Project.providerFromProjectProperty(
@@ -20,7 +21,7 @@ internal fun Project.booleanProviderFromProjectProperty(
     )
 
 
-internal fun <T : Any> Project.providerFromProjectProperty(
+internal fun <T : Serializable> Project.providerFromProjectProperty(
     propertyName: String, transform: (String) -> T, defaultValue: T? = null
 ): Provider<T> = provider {
     findProperty(propertyName)?.toString()?.let(transform) ?: defaultValue
