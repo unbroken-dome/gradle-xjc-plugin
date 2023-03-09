@@ -15,5 +15,6 @@ xjc {
 
 
 dependencies {
+    // This is still needed for Gradle to compile the generated Java and add transitively
     implementation 'javax.xml.bind:jaxb-api:2.2.12'
 }
