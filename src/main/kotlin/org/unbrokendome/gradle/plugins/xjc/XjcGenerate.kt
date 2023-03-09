@@ -43,6 +43,7 @@ abstract class XjcGenerate
         private val WorkActionClassNamesByVersion = mapOf(
             "2.2" to "org.unbrokendome.gradle.plugins.xjc.work.xjc22.XjcGeneratorWorkAction",
             "2.3" to "org.unbrokendome.gradle.plugins.xjc.work.xjc23.XjcGeneratorWorkAction",
+            "2.4" to "org.unbrokendome.gradle.plugins.xjc.work.xjc24.XjcGeneratorWorkAction",
             "3.0" to "org.unbrokendome.gradle.plugins.xjc.work.xjc30.XjcGeneratorWorkAction"
         )
         private val HIGHEST_SUPPORTED_VERSION = WorkActionClassNamesByVersion.keys.max()

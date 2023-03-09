@@ -4,7 +4,7 @@ XJC has been around for a long time and comes in a variety of versions, includin
 Oracle and non-standard forks from third parties. They should usually correspond with the version of the JAXB
 API / runtime used, but it is also possible to use a newer XJC to generate code for use with an earlier JAXB target.
 
-The `org.unbroken-dome.xjc` plugin supports the standard XJC versions 2.2, 2.3 and 3.0. Other versions may work
+The `org.unbroken-dome.xjc` plugin supports the standard XJC versions 2.2, 2.3, 2.4 and 3.0. Other versions may work
 as well but are not tested. The plugin will use XJC 2.3 by default if the version is not specified.
 
 NOTE: XJC 3.0 is currently in milestone status but since the interface to XJC has not
@@ -54,6 +54,12 @@ invoking XJC, with the following dependencies:
 
 | 2.3
 | `com.sun.xml.bind:jaxb-xjc:2.3.3`
+
+| 2.4
+| `com.sun.xml.bind:jaxb-xjc:2.4.0-b180830.0438`
+  `com.sun.xml.bind:jaxb-core:2.3.0.1`
+  `com.sun.xml.bind:jaxb-impl:2.4.0-b180830.0438`
+  `javax.xml.bind:jaxb-api:2.4.0-b180830.0359`
 
 | 3.0
 | `com.sun.xml.bind:jaxb-xjc:3.0.2`
