@@ -35,7 +35,8 @@ val xjc22: SourceSet by sourceSets.creating
 val xjc23: SourceSet by sourceSets.creating
 val xjc24: SourceSet by sourceSets.creating
 val xjc30: SourceSet by sourceSets.creating
-val xjcSourceSets = listOf(xjcCommon, xjc22, xjc23, xjc24, xjc30)
+val xjc40: SourceSet by sourceSets.creating
+val xjcSourceSets = listOf(xjcCommon, xjc22, xjc23, xjc24, xjc30, xjc40)
 
 
 dependencies {
@@ -75,6 +76,12 @@ dependencies {
     "xjc30CompileOnly"("com.sun.xml.bind:jaxb-core:3.0.2")
     "xjc30CompileOnly"("com.sun.xml.bind:jaxb-impl:3.0.2")
     "xjc30CompileOnly"("jakarta.xml.bind:jakarta.xml.bind-api:3.0.1")
+
+    "xjc40CompileOnly"(xjcCommon.output)
+    "xjc40CompileOnly"("com.sun.xml.bind:jaxb-xjc:4.0.2")
+    "xjc40CompileOnly"("com.sun.xml.bind:jaxb-core:4.0.2")
+    "xjc40CompileOnly"("com.sun.xml.bind:jaxb-impl:4.0.2")
+    "xjc40CompileOnly"("jakarta.xml.bind:jakarta.xml.bind-api:4.0.0")
 
     "testLibApi"(kotlin("stdlib-jdk8"))
     "testLibApi"("com.willowtreeapps.assertk:assertk-jvm:0.22")

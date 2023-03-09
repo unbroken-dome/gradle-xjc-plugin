@@ -21,7 +21,7 @@ interface XjcExtension : XjcGeneratorOptions {
      * The version of the XJC _tool_ to use.
      *
      * This will influence the version of the XJC compiler that is used, but not (directly) the parameters
-     * that are passed to it. Valid values are `2.2`, `2.3`, `2.4` and `3.0`.
+     * that are passed to it. Valid values are `2.2`, `2.3`, `2.4`, `3.0` and `4.0`.
      *
      * The value of this property only influences the set of
      * [defaultDependencies][org.gradle.api.artifacts.Configuration.defaultDependencies] on the global `xjcTool`

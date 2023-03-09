@@ -52,6 +52,12 @@ class XjcPlugin : Plugin<Project> {
                 "com.sun.xml.bind:jaxb-core:3.0.2",
                 "com.sun.xml.bind:jaxb-impl:3.0.2",
                 "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
+            ),
+            "4.0" to listOf(        // Supports JAXB -target 3.0  (and 2.3)
+                "com.sun.xml.bind:jaxb-xjc:4.0.2",
+                "com.sun.xml.bind:jaxb-core:4.0.2",
+                "com.sun.xml.bind:jaxb-impl:4.0.2",
+                "jakarta.xml.bind:jakarta.xml.bind-api:4.0.0"
             )
         )
     }
