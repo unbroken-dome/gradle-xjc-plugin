@@ -15,7 +15,7 @@ The following properties are available in the project-scoped `xjc` block, and ap
 | `targetVersion` (`String`)
 | The version of the JAXB specification to target.
 | `-target`
-| (use latest version)
+| (use latest version supported by the XJC tool version in use)
 
 | `docLocale` (`String`)
 | The locale to be used when running XJC. This may influence the language of documentation comments in XJC-generated files.
