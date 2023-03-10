@@ -14,6 +14,7 @@ import org.unbrokendome.gradle.plugins.xjc.internal.XjcGeneratorWorkParameters
 import org.unbrokendome.gradle.plugins.xjc.resolver.ClasspathUriResolver
 import org.unbrokendome.gradle.plugins.xjc.resolver.ExtensibleCatalogResolver
 import org.unbrokendome.gradle.plugins.xjc.resolver.MavenUriResolver
+import org.unbrokendome.gradle.plugins.xjc.resolver.ReflectionHelper
 import org.xml.sax.InputSource
 import java.net.URI
 import java.net.URISyntaxException
@@ -74,22 +75,26 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
 
         checkApiInClassPath()
 
-        val model = ModelLoader.load(options, JCodeModel(), errorReceiver)
-            ?: throw Exception("Parse failed")
+        try {
+            val model = ModelLoader.load(options, JCodeModel(), errorReceiver)
+                ?: throw Exception("Parse failed")
 
-        val outline = model.generateCode(options, errorReceiver)
-            ?: throw Exception("Code generation failed")
+            val outline = model.generateCode(options, errorReceiver)
+                ?: throw Exception("Code generation failed")
 
-        listener.compiled(outline)
+            listener.compiled(outline)
 
-        val codeWriter = options.createCodeWriter()
-            .let { cw ->
-                if (!options.quiet) {
-                    ProgressCodeWriter(cw, listener, model.codeModel.countArtifacts())
-                } else cw
-            }
+            val codeWriter = options.createCodeWriter()
+                .let { cw ->
+                    if (!options.quiet) {
+                        ProgressCodeWriter(cw, listener, model.codeModel.countArtifacts())
+                    } else cw
+                }
 
-        model.codeModel.build(codeWriter)
+            model.codeModel.build(codeWriter)
+        } finally {
+            ReflectionHelper.closeAll()
+        }
     }
 
 
