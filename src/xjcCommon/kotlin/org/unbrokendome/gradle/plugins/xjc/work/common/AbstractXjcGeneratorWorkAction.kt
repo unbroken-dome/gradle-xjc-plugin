@@ -28,6 +28,8 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
 
     protected open fun getContextClassLoaderHolder(): IContextClassLoaderHolder = ContextClassLoaderHolder()
 
+    protected open fun getOptionsAccessor(options: Options): IOptionsAccessor = OptionsAccessor(options)
+
     override fun execute() {
 
         parameters.targetDir.get().asFile.mkdirs()
@@ -117,6 +119,7 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
     }
 
     protected open fun buildOptions(options: Options) = options.apply {
+        val optionsAccessor = getOptionsAccessor(options)
 
 
         target = parameters.target
@@ -181,7 +184,7 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
         }
 
         parameters.encoding.orNull?.let {
-            encoding = it
+            optionsAccessor.setEncoding(it)   // encoding = it
         }
 
         parameters.episodeTargetFile.orNull?.asFile?.let { episodeTargetFile ->
@@ -191,7 +194,7 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
 
         if (logger.isInfoEnabled) {
             logger.info(
-                "XJC options:\n{}", dumpOptions().prependIndent("  ")
+                "XJC options:\n{}", dumpOptions(optionsAccessor).prependIndent("  ")
             )
             logger.info("XJC extra args: {}", parameters.extraArgs.get())
 
@@ -207,7 +210,7 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
     }
 
 
-    private fun Options.dumpOptions() = buildString {
+    private fun Options.dumpOptions(optionsAccessor: IOptionsAccessor) = buildString {
         append("targetVersion: ").appendln(target)
 
         appendln("grammars:")
@@ -234,7 +237,8 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
         append("compatibilityMode: ").appendln(if (isExtensionMode) "EXTENSION" else "STRICT")
         append("defaultPackage: ").appendln(defaultPackage)
         append("defaultPackage2: ").appendln(defaultPackage2)
-        append("encoding: ").appendln(encoding)
+        if(optionsAccessor.hasEncoding())
+            append("encoding: ").appendln(optionsAccessor.getEncoding())
         appendln("plugins:")
         for (plugin in allPlugins) {
             append("  - ").append(plugin.javaClass.name)
