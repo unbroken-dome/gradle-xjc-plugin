@@ -55,6 +55,14 @@ class MavenUriResolver(
             )
             val resourceName = path.removePrefix("/")
             classLoader.use {
+
+                val resList = classLoader.getResources(resourceName).toList()
+                if(resList.size > 1) {
+                    for((index,arti) in artifacts.withIndex()) {
+                        logger.warn("MavenUriResolver multiple matching resources found[{}]: {}", index, arti)
+                    }
+                }
+
                 classLoader.getResource(resourceName)?.toURI()
                     ?: throw IllegalArgumentException(
                         "Could not resolve resource \"$resourceName\" from classpath: ${classLoader.urLs.toList()}"
