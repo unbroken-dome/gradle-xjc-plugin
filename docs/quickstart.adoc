@@ -18,6 +18,24 @@ plugins {
 }
 ----
 
+It may be necessary to include a repository entry to allow Gradle to locate the plugin to active.
+
+[source,groovy,role="primary",subs="+attributes"]
+.Groovy
+----
+repositories {
+    gradlePluginPortal()
+}
+----
+
+[source,kotlin,role="secondary",subs="+attributes"]
+.Kotlin
+----
+repositories {
+    gradlePluginPortal()
+}
+----
+
 Put your XJC source files into `src/main/schema`. This includes XML schema files (extension `.xsd`),
 binding customizations (extension `.xjb`) and catalog files (extension `.cat`).
 
