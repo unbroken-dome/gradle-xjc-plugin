@@ -26,19 +26,31 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
     private val logger = Logging.getLogger(javaClass)
 
 
+    protected open fun getContextClassLoaderHolder(): IContextClassLoaderHolder = ContextClassLoaderHolder()
+
     override fun execute() {
 
         parameters.targetDir.get().asFile.mkdirs()
 
-        val options = buildOptions()
+        val options = setupBuildOptions()
 
-        val docLocale = parameters.docLocale.orNull
-        if (docLocale != null) {
-            withDefaultLocale(Locale.forLanguageTag(docLocale)) {
+        val contextClassLoaderHolder = getContextClassLoaderHolder()
+
+        try {
+            contextClassLoaderHolder.setup(options)
+
+            buildOptions(options)
+
+            val docLocale = parameters.docLocale.orNull
+            if (docLocale != null) {
+                withDefaultLocale(Locale.forLanguageTag(docLocale)) {
+                    doExecute(options)
+                }
+            } else {
                 doExecute(options)
             }
-        } else {
-            doExecute(options)
+        } finally {
+            contextClassLoaderHolder.restore()
         }
     }
 
@@ -98,18 +110,14 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
     }
 
 
-    protected open fun buildOptions() = Options().apply {
-
+    protected open fun setupBuildOptions() = Options().apply {
         parameters.pluginClasspath.forEach { classpathEntry ->
             classpaths.add(classpathEntry.toURI().toURL())
         }
+    }
 
-        // Set up the classloader containing the plugin classpath. This should happen before any call
-        // to parseArgument() or parseArguments() because it might trigger the resolution of plugins
-        // (which are then cached)
-        val contextClassLoader = Thread.currentThread().contextClassLoader
-        val userClassLoader = getUserClassLoader(contextClassLoader)
-        Thread.currentThread().contextClassLoader = userClassLoader
+    protected open fun buildOptions(options: Options) = options.apply {
+
 
         target = parameters.target
             .map { SpecVersion.parse(it) }
