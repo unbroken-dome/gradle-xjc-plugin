@@ -45,6 +45,11 @@ class MavenUriResolver(
         val path = dependency.path
 
         return if (path != null) {
+            if(logger.isDebugEnabled) {     // This is useful visibility for users
+                matchingArtifacts.forEach {
+                    logger.debug("MavenUriResolver matchingArtifacts={} for {}", it, dependency)
+                }
+            }
             val classLoader = URLClassLoader(
                 matchingArtifacts.map { it.file.toURI().toURL() }.toList().toTypedArray()
             )
