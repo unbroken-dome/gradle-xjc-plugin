@@ -31,12 +31,13 @@ testSets {
 
 
 val xjcCommon: SourceSet by sourceSets.creating
+val xjc21: SourceSet by sourceSets.creating
 val xjc22: SourceSet by sourceSets.creating
 val xjc23: SourceSet by sourceSets.creating
 val xjc24: SourceSet by sourceSets.creating
 val xjc30: SourceSet by sourceSets.creating
 val xjc40: SourceSet by sourceSets.creating
-val xjcSourceSets = listOf(xjcCommon, xjc22, xjc23, xjc24, xjc30, xjc40)
+val xjcSourceSets = listOf(xjcCommon, xjc21, xjc22, xjc23, xjc24, xjc30, xjc40)
 
 
 dependencies {
@@ -53,6 +54,12 @@ dependencies {
     }
 
     "xjcCommonCompileOnly"("com.sun.xml.bind:jaxb-xjc:2.3.3")
+
+    "xjc21CompileOnly"(xjcCommon.output)
+    "xjc21CompileOnly"("com.sun.xml.bind:jaxb-xjc:2.1.17")
+    "xjc21CompileOnly"("com.sun.xml.bind:jaxb-core:2.1.14")
+    "xjc21CompileOnly"("com.sun.xml.bind:jaxb-impl:2.1.17")
+    "xjc21CompileOnly"("javax.xml.bind:jaxb-api:2.1")
 
     "xjc22CompileOnly"(xjcCommon.output)
     "xjc22CompileOnly"("com.sun.xml.bind:jaxb-xjc:2.2.11")

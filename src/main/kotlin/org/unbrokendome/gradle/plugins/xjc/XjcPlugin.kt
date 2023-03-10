@@ -29,6 +29,12 @@ class XjcPlugin : Plugin<Project> {
         val XJC_GLOBAL_CATALOG_RESOLUTION_CONFIGURATION_NAME = "xjcCatalogResolutionGlobal"
 
         private val DefaultXjcToolDependenciesByVersion = mapOf(
+            "2.1" to listOf(        // Supports JAXB -target 2.1  (and 2.0)
+                "com.sun.xml.bind:jaxb-xjc:2.1.17",
+                "com.sun.xml.bind:jaxb-core:2.1.14",
+                "com.sun.xml.bind:jaxb-impl:2.1.17",
+                "javax.xml.bind:jaxb-api:2.1"
+            ),
             "2.2" to listOf(        // Supports JAXB -target 2.2  (and 2.1 and 2.0)
                 "com.sun.xml.bind:jaxb-xjc:2.2.11",
                 "com.sun.xml.bind:jaxb-core:2.2.11",

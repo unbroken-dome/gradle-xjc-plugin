@@ -21,7 +21,7 @@ interface XjcExtension : XjcGeneratorOptions {
      * The version of the XJC _tool_ to use.
      *
      * This will influence the version of the XJC compiler that is used, but not (directly) the parameters
-     * that are passed to it. Valid values are `2.2`, `2.3`, `2.4`, `3.0` and `4.0`.
+     * that are passed to it. Valid values are `2.1`, `2.2`, `2.3`, `2.4`, `3.0` and `4.0`.
      *
      * The value of this property only influences the set of
      * [defaultDependencies][org.gradle.api.artifacts.Configuration.defaultDependencies] on the global `xjcTool`
@@ -53,6 +53,7 @@ interface XjcExtension : XjcGeneratorOptions {
      *   `auto-resolve` This will behave as `default` first, if `default` fails then proceed using `latest`.
      *     This strategy is anticipated to be the action most users want in the situation.
      *   `latest` to use the strategy for the latest supported version.  As listed in `xjcVersion`.
+     *   `legacy-latest` to use the latest known legacy strategy as used for 2.1 XJC tools.
      *   `2.3` would force a specific strategy of a specific XJC tool version.
      *     Any string value also valid for `xjcVersion` is allowed, `2.3` is an example of one of those values.
      *

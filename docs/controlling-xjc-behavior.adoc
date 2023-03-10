@@ -21,7 +21,7 @@ The following properties are available in the project-scoped `xjc` block, and ap
 | JVM default locale
 
 | `encoding` (`String`)
-| The encoding for generated files.
+| The encoding for generated files.  This is supported by XJC 2.2 and later.
 | `-encoding` (non-standard)
 | `UTF-8`
 

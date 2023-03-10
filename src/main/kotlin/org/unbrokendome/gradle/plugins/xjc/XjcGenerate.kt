@@ -41,12 +41,17 @@ abstract class XjcGenerate
          * Used to select the correct WorkAction for a given JAXB spec version.
          */
         private val WorkActionClassNamesByVersion = mapOf(
+            "2.1" to "org.unbrokendome.gradle.plugins.xjc.work.xjc21.XjcGeneratorLegacyWorkAction",
             "2.2" to "org.unbrokendome.gradle.plugins.xjc.work.xjc22.XjcGeneratorWorkAction",
             "2.3" to "org.unbrokendome.gradle.plugins.xjc.work.xjc23.XjcGeneratorWorkAction",
             "2.4" to "org.unbrokendome.gradle.plugins.xjc.work.xjc24.XjcGeneratorWorkAction",
             "3.0" to "org.unbrokendome.gradle.plugins.xjc.work.xjc30.XjcGeneratorWorkAction",
             "4.0" to "org.unbrokendome.gradle.plugins.xjc.work.xjc40.XjcGeneratorWorkAction"
         )
+        private val LEGACY_LATEST_SUPPORTED_VERSION = WorkActionClassNamesByVersion.entries
+            .filter { it.value.endsWith("LegacyWorkAction") }
+            .map { it.key }
+            .max()
         private val HIGHEST_SUPPORTED_VERSION = WorkActionClassNamesByVersion.keys.max()
     }
 
@@ -188,6 +193,7 @@ abstract class XjcGenerate
      *   `auto-resolve` This will behave as `default` first, if `default` fails then proceed using `latest`.
      *     This strategy is anticipated to be the action most users want in the situation.
      *   `latest` to use the strategy for the latest supported version.  As listed in `xjcVersion`.
+     *   `legacy-latest` to use the latest known legacy strategy as used for 2.1 XJC tools.
      *   `2.3` would force a specific strategy of a specific XJC tool version.
      *     Any string value also valid for `xjcVersion` is allowed, `2.3` is an example of one of those values.
      *
@@ -257,6 +263,8 @@ abstract class XjcGenerate
         var xjcVersion: String?
         if("latest".equals(xjcVersionStrategy, true))
             xjcVersion = HIGHEST_SUPPORTED_VERSION
+        else if("legacy-latest".equals(xjcVersionStrategy, true))
+            xjcVersion = LEGACY_LATEST_SUPPORTED_VERSION
         else if(!isDefault && !isAutoResolve && xjcVersionStrategy.isNotEmpty())
             xjcVersion = xjcVersionStrategy
         else    // "default" || "auto-resolve" || empty || null
