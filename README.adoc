@@ -5,6 +5,14 @@ ifdef::env-github[]
 :caution-caption: :fire:
 :warning-caption: :warning:
 endif::[]
+:my-base-uri: https://github.com/dlmiles/gradle-xjc-plugin
+:uri-build-status: https://github.com/dlmiles/gradle-xjc-plugin/actions/workflows/build.yml
+:img-build-status: https://github.com/dlmiles/gradle-xjc-plugin/actions/workflows/build.yml/badge.svg
+
+ifdef::env-github[]
+image:{img-build-status}[CI-Gradle-build,link={uri-build-status}]
+#CI Targets: `Java 8` and `Java 11` with `Gradle 5.6` through `Gradle 8.0.2`#
+endif::[]
 
 = Gradle XJC Plugin
 
