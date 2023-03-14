@@ -3,6 +3,11 @@ name: CI-Gradle-build
 on:
   push:
   workflow_dispatch:
+    inputs:
+      GRADLE_TARGET_ENABLE_integrationTest:
+        description: 'Run with integrationTest ?'
+        default: false
+        type: boolean
   schedule:
     # * is a special character in YAML
     # setup monthly background build
@@ -21,6 +26,10 @@ jobs:
 
       - name: Version
         run: |
+          if [ -z "${GRADLE_TARGET_ENABLE_integrationTest}" ] && [ -n "${{ github.event.schedule }}" ]; then
+            # force this on for schedule build
+            echo "GRADLE_TARGET_ENABLE_integrationTest=true" >> $GITHUB_ENV
+          fi
           target_plugin="org.unbroken-dome.xjc"
           target_group=$(grep "^group=" gradle.properties | cut -d'=' -f2-)
           target_artifact="gradle-xjc-plugin"
@@ -57,7 +66,7 @@ jobs:
         run: ./gradlew check
 
       - name: Gradle - integrationTest
-        if: ${{ vars.GRADLE_TARGET_ENABLE_integrationTest == 'true' }}
+        if: ${{ vars.GRADLE_TARGET_ENABLE_integrationTest == 'true' || inputs.GRADLE_TARGET_ENABLE_integrationTest }}
         run: ./gradlew integrationTest
 
       - name: Gradle - publish
