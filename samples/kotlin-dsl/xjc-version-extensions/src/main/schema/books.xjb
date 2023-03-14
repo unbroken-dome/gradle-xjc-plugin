@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxb:bindings
+        xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+        xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+        xmlns:ci="http://jaxb.dev.java.net/plugin/code-injector"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/jaxb http://java.sun.com/xml/ns/jaxb/bindingschema_2_0.xsd
+ http://jaxb.dev.java.net/plugin/code-injector"
+        jaxb:version="2.0">
+
+    <jaxb:bindings schemaLocation="books.xsd">
+        <jaxb:schemaBindings>
+            <jaxb:package name="org.unbroken_dome.gradle_xjc_plugin.samples.books.code_injector"/>
+        </jaxb:schemaBindings>
+
+        <jaxb:bindings node="/xsd:schema/xsd:complexType[@name='bookType']">
+            <ci:code>
+                <![CDATA[
+                public static Long injectedSystemCurrentTime() {
+                    return System.currentTimeMillis();
+                }
+                ]]>
+            </ci:code>
+        </jaxb:bindings>
+    </jaxb:bindings>
+
+</jaxb:bindings>
