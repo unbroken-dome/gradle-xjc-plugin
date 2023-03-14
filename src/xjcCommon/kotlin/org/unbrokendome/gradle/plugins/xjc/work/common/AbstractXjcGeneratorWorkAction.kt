@@ -16,6 +16,7 @@ import org.unbrokendome.gradle.plugins.xjc.resolver.ExtensibleCatalogResolver
 import org.unbrokendome.gradle.plugins.xjc.resolver.MavenUriResolver
 import org.unbrokendome.gradle.plugins.xjc.resolver.ReflectionHelper
 import org.xml.sax.InputSource
+import java.lang.reflect.InvocationTargetException
 import java.net.URI
 import java.net.URISyntaxException
 import java.util.Locale
@@ -90,7 +91,11 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
         checkApiInClassPath()
 
         try {
-            val model = ModelLoader.load(options, JCodeModel(), errorReceiver)
+            val jCodeModel = JCodeModel()
+
+            addClassNameReplacer(options.target, jCodeModel)
+
+            val model = ModelLoader.load(options, jCodeModel, errorReceiver)
                 ?: throw Exception("Parse failed")
 
             val outline = model.generateCode(options, errorReceiver)
@@ -111,6 +116,55 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
         }
     }
 
+    private fun reflectiveInvoke_JCodeModel_addClassNameReplacer(o: Any, c1: String?, c2: String?): Boolean {
+        try {
+            // JCodeModel#addClassNameReplacer(String,String)
+            val m = o.javaClass.getMethod("addClassNameReplacer", String::class.java, String::class.java)
+            m.invoke(o, c1, c2)
+            return true
+        } catch (_: NoSuchMethodException) {
+        } catch (_: IllegalAccessException) {
+        } catch (_: IllegalArgumentException) {
+        } catch (_: InvocationTargetException) {
+        } catch (_: SecurityException) {
+        } catch (_: Throwable) {
+        }
+        return false
+    }
+
+    private fun addClassNameReplacer(target: SpecVersion, jCodeModel: JCodeModel) {
+        // runtime lookup of V3_0 instance
+        val specVersion30 = SpecVersion.parse("3.0")
+
+        if(specVersion30 == null)
+            return  // no support for v3.0 in XJC implementation
+
+        if(target.ordinal >= specVersion30.ordinal)
+            return  // targeting 3.0 or newer, nothing to do here
+
+        // if target version is < 3.0
+
+        // if implementation is: com.sun.xml.bind.jaxb-xjc  or has class ?
+        //   we don't really check this, this allows the feature to work on 3rd party XJC
+        //   implementations where the addClassNameReplacer(String,String) method is available
+        // if implementation version is >= 3.0 or simply has the method ?
+        //   the method was only introduced since 3.0 so it doesn't matter if we can't
+        //   find it on older versions.
+        // if a new version of XJC 2.x were to came along with the method available in the
+        //   future adding these replacement still doesn't break anything while targeting < 3.0
+        val JAKARTA = "jakarta.xml.bind"            // Regex.escape() breaks it
+        val JAVAX = "javax.xml.bind"
+        val JAXB_CORE = "org.glassfish.jaxb.core"   // Regex.escape() breaks it
+        val BIND = "com.sun.xml.bind"
+
+        // The JCodeModel#addClassNameReplacer(String c1,String c2) method is documented
+        //  as taking a string Regex in c1.  You would expect to quote-meta on the
+        //  full-stop characters as the correct c1 value.  But it also uses the c1
+        //  value in a String#startsWith(c1) check before doing a String#replaceAll(c1, c2).
+
+        reflectiveInvoke_JCodeModel_addClassNameReplacer(jCodeModel, JAKARTA, JAVAX)
+        reflectiveInvoke_JCodeModel_addClassNameReplacer(jCodeModel, JAXB_CORE, BIND)
+    }
 
     protected open fun setupBuildOptions() = Options().apply {
         parameters.pluginClasspath.forEach { classpathEntry ->
