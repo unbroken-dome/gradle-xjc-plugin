@@ -170,6 +170,53 @@ TIP: When expecting `jarkarta` package output, ensure to remove `javax.xml.bind:
 |===
 
 
+== XJC Tool runtime Java compatibility
+
+This table maybe a useful reference, this only concerns the standard `com.sun.xml.bind`
+implementation and the contents of the jaxb-xjc.jar itself.
+
+Inaccuracies may exist in this table, but it demonstrates some possible unexpected
+inconsistencies to look into when working with some versions of the XJC tool.
+
+
+|===
+| XJC Tool Version | Java Version
+
+| 2.1
+| Java SE 5
+
+| 2.2 to 2.2.5
+| Java SE 5
+
+| 2.2.6+
+| Java SE 6
+
+| 2.3.0-b170127.1453 and 2.3.0.1
+| Java SE 7 (JDK6+ com/sun/xml/dtdparser/*.class, no JDK9+ module-info.class provided but JDK9+ Options.class)
+
+| 2.3.0
+| Java SE 7 (JDK6+ com/sun/xml/dtdparser/*.class, no JDK9+ module-info.class provided but XJC2Task/CatalogUtil still provided)
+
+| 2.3.1
+| Java SE 7 (JDK9+ module-info.class provided)
+
+| 2.3.2
+| Java SE 7 (removed JDK9+ module-info.class but XJC2Task/CatalogUtil still provided)
+
+| 2.3.3+
+| Java SE 8 (JDK9+ module-info.class provided)
+
+| 2.4.x
+| Java SE 7 (JDK8+ com/sun/xml/dtdparser/*.class, JDK9+ module-info.class provided)
+
+| 3.x
+| Java SE 8 (JDK9+ module-info.class provided)
+
+| 4.x
+| Java SE 11
+
+|===
+
 == Configuring XJC with Gradle Project Properties
 
 As an alternative to configuring the above settings in your build script, you can use Gradle project
