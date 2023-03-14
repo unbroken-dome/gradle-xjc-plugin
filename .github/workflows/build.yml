@@ -1,0 +1,84 @@
+name: CI-Gradle-build
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    # * is a special character in YAML
+    # setup monthly background build
+    - cron: '45 4 18 * *'
+
+jobs:
+  gradle:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        jvm: ['8', '11']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Version
+        run: |
+          target_plugin="org.unbroken-dome.xjc"
+          target_group=$(grep "^group=" gradle.properties | cut -d'=' -f2-)
+          target_artifact="gradle-xjc-plugin"
+          target_version=$(grep "^version=" gradle.properties | cut -d'=' -f2-)
+
+          echo "target_plugin=$target_plugin" >> $GITHUB_ENV
+          echo "target_group=$target_group" >> $GITHUB_ENV
+          echo "target_artifact=$target_artifact" >> $GITHUB_ENV
+          echo "target_version=$target_version" >> $GITHUB_ENV
+
+      - name: Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.jvm }}
+
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties', '**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Gradle - setup
+        uses: gradle/gradle-build-action@v2
+
+      - name: Gradle - build
+        run: ./gradlew build
+
+      - name: Gradle - check
+        run: ./gradlew check
+
+      - name: Gradle - integrationTest
+        if: ${{ vars.GRADLE_TARGET_ENABLE_integrationTest == 'true' }}
+        run: ./gradlew integrationTest
+
+      - name: Gradle - publish
+        run: ./gradlew publish
+
+      - name: Upload - prepare
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        shell: bash
+        run: |
+          mkdir dist;
+          for dir in $(find . -type d -path "*/build/repo");
+          do
+            cp -a "$dir" "dist/";
+          done
+          find "dist" -type f -exec ls -ld {} \;
+          du -s "dist"
+
+      - name: Upload - perform
+        uses: actions/upload-artifact@v3
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        with:
+          name: java${{ matrix.jvm }}-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-artifacts
+          path: dist/repo/*
+          if-no-files-found: error
