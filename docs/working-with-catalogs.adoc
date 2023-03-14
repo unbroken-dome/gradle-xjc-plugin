@@ -141,3 +141,13 @@ declared in the `xjcCatalogResolution` configuration (or inherited through other
 
 You can think of the `maven:` scheme as an extension to `classpath:` with a filter for the JARs to be searched
 for resources. (In fact, `classpath:` is defined as an alias for `maven::!`.)
+
+
+=== Catalog resolution diagnostic
+
+.Suggestions:
+ * --info (dump XJC configuration)
+ * --debug (see catalog resolution working)
+ * -Dxml.catalog.verbosity=999 for info at
+   https://xerces.apache.org/xml-commons/components/apidocs/resolver/org/apache/xml/resolver/CatalogManager.html
+ * Lookup documentation around Apache Xerces CatalogManager.properties
