@@ -229,3 +229,7 @@ tasks.named("asciidoctor", org.asciidoctor.gradle.AsciidoctorTask::class) {
         "source-highlighter" to "prettify"
     ))
 }
+
+apply {
+     from("${rootDir}/publish.gradle.kts")
+}
