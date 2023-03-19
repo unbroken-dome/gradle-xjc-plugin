@@ -94,7 +94,7 @@ dependencies {
     "testLibApi"("com.willowtreeapps.assertk:assertk-jvm:0.22")
 
     "testImplementation"("org.spekframework.spek2:spek-dsl-jvm:2.0.9")
-    "testRuntimeOnly"("org.spekframework.spek2:spek-runner-junit5:2.0.9")
+    "testRuntimeOnly"("org.spekframework.spek2:spek-runner-junit5:2.0.15")
 
     "integrationTestImplementation"(gradleTestKit())
     "integrationTestImplementation"("org.junit.jupiter:junit-jupiter-api:5.7.0")
