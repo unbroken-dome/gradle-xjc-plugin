@@ -5,7 +5,10 @@ ifdef::env-github[]
 :caution-caption: :fire:
 :warning-caption: :warning:
 endif::[]
-:my-base-uri: https://github.com/dlmiles/gradle-xjc-plugin
+:github-pages-uri: https://dlmiles.github.io/gradle-xjc-plugin
+:github-uri: https://github.com/dlmiles/gradle-xjc-plugin
+:github-m2-uri: https://maven.pkg.github.com/dlmiles/gradle-xjc-plugin
+:maven-groupId: io.github.dlmiles
 :uri-build-status: https://github.com/dlmiles/gradle-xjc-plugin/actions/workflows/build.yml
 :img-build-status: https://github.com/dlmiles/gradle-xjc-plugin/actions/workflows/build.yml/badge.svg
 
@@ -29,8 +32,20 @@ Invokes the `xjc` binding compiler from a Gradle build.
 
 == Requirements
 
+The Gradle plugin itself:
+
 - Gradle 5.6 or higher
 - JDK 1.8 or higher (when running Gradle)
+
+The XJC Tool requirements:
+
+- If using XJC Tool 4.x or later, the XJC Tool requires JDK 11 or higher while this
+  plugin only requires 1.8 or higher, earlier versions of XJC Tool are
+  compatible with JDK 1.8
+- Some specific XJC Tool versions may have been published with incorrect byte code
+  compatibility, resulting in those versions not running on the Java SE version they
+  intended to target
+- See section link:{github-pages-uri}#_xjc_tool_runtime_java_compatibility[XJC Tool Runtime Java Compatibility]
 
 
 == Quick Start
@@ -38,6 +53,33 @@ Invokes the `xjc` binding compiler from a Gradle build.
 Apply the `org.unbroken-dome.xjc` plugin to your Gradle build script and add an appropriate
 dependency on the JAXB API:
 
+ifdef::env-github[]
+[source,kotlin,subs="attributes+"]
+.settings.gradle(.kts)
+----
+pluginManagement {
+    // 3rd party releases and SNAPSHOTs
+    maven {
+        url "{github-pages-uri}/java8/maven2"
+        // url "{github-m2-uri}"
+        content {
+            // this repository *only* contains artifacts for specific groups
+            includeGroup "org.unbroken-dome.xjc"
+            includeGroup "org.unbroken-dome.gradle-plugins"
+ifdef::env-github[]
+
+            includeGroup "{maven-groupId}.xjc"
+            includeGroup "{maven-groupId}.gradle-plugins"
+endif::[]
+        }
+    }
+
+    // Official releases only
+    gradlePluginPortal()   
+}
+----
+
+endif::[]
 [source,kotlin]
 .build.gradle(.kts)
 ----
@@ -59,5 +101,11 @@ it the `main` Java compilation.
 
 == Further Documentation
 
-* https://unbroken-dome.github.io/projects/gradle-xjc-plugin/[User Manual]
-* https://unbroken-dome.github.io/projects/gradle-xjc-plugin/dokka/gradle-xjc-plugin/[API/DSL Documentation]
+* {github-pages-uri}/[User Manual]
+* {github-pages-uri}/dokka/gradle-xjc-plugin/[API/DSL Documentation]
+* {github-m2-uri}/[Github Maven2 Package Browse]
+* {github-pages-uri}/java8/maven2/[Github-Pages Maven2 Artifact Browse]
+* {github-pages-uri}/artifacts/[Maven2 Artifact Archive Download]
+
+* {github-pages-uri}/java8/tests/[Java 8 Test Reports]
+* {github-pages-uri}/java11/tests/[Java 11 Test Reports]
