@@ -24,11 +24,20 @@ Invokes the `xjc` binding compiler from a Gradle build.
 
 == Features
 
-- Automatically enable XJC code generation for each source set in your project
-- support different versions of XJC through classpath isolation
-- producing and consuming episodes
-- catalogs with `maven:` and `classpath:` URI resolution (similar to maven-jaxb2-plugin)
-
+- Supports XJC Tool `com.sun.xml.bind` versions 2.1 (legacy), 2.2, 2.3, 2.4, 3.0 (jakarta) and
+  4.0 (jakarta) which is the reference implementation now hosted by Eclipse&reg; foundation
+  under the EE4J project.
+- Supports JAXB&trade; specification -target versions 2.0, 2.1, 2.2, 2.3, 3.0 (jakarta).
+- Automatically enable XJC code generation for each source set in your project.
+  Project structural use of multiple src/<name>/schema/ folders to organise bindings and
+  schemas.
+- Support XJC through classpath isolation to better control visibility of data presented to the
+  tool separate from the Gradle build itself.
+- Producing and consuming episodes.
+- Dependency based catalog sources with `maven:` and `classpath:` URI resolution (similar to
+  maven-jaxb2-plugin) as well as the standard file,jar,jar:file,http,https sources.
+- XJC tool plugin extention support, including custom plugins you may provide an implementation
+  for.
 
 == Requirements
 
