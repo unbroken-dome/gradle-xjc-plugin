@@ -2,6 +2,7 @@ name: CI-Gradle-build
 
 on:
   push:
+  release:
   workflow_dispatch:
     inputs:
       GRADLE_TARGET_ENABLE_integrationTest:
@@ -9,6 +10,7 @@ on:
         default: false
         type: boolean
   schedule:
+    # FIXME we probably want this to work on the latest release tag only
     # * is a special character in YAML
     # setup monthly background build
     - cron: '45 4 18 * *'
@@ -248,6 +250,7 @@ jobs:
 
 
   deploy:
+    if: ( github.ref == 'master' && github.event_name == 'push' ) || github.event_name == 'release' || github.event_name == 'schedule'
     needs: gh-pages-prepare
 
     permissions:
