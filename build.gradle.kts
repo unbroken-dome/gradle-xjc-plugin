@@ -76,7 +76,7 @@ dependencies {
     "xjc24CompileOnly"(xjcCommon.output)
     "xjc24CompileOnly"("com.sun.xml.bind:jaxb-xjc:2.4.0-b180830.0438")
     "xjc24CompileOnly"("com.sun.xml.bind:jaxb-impl:2.4.0-b180830.0438")
-    "xjc22CompileOnly"("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
+    "xjc24CompileOnly"("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
 
     "xjc30CompileOnly"(xjcCommon.output)
     "xjc30CompileOnly"("com.sun.xml.bind:jaxb-xjc:3.0.2")
