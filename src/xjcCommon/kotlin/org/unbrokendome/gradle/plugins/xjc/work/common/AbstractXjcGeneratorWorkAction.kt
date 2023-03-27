@@ -58,29 +58,42 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
     }
 
     protected open fun checkApiInClassPath() {
+	val javax_legacy_className = "javax.xml.bind.JAXBPermission"
         val javax_className = "javax.xml.bind.JAXBContextFactory"
         val jakarta_className = "jakarta.xml.bind.JAXBContextFactory"
+        var kind: String? = "unknown"
 
-        var foundJavax = false
-        var foundJakarta = false
+        val list = mutableListOf<String>()
+        try {
+            // It is normal to find this legacy class also in the newer bind-api.jar
+            Class.forName(javax_legacy_className)
+            list.add(javax_legacy_className)
+            kind = "legacy"
+        } catch (_: ClassNotFoundException) {
+        }
         try {
             Class.forName(javax_className)
-            foundJavax = true
+            list.add(javax_className)
+            kind = "javax"
         } catch (_: ClassNotFoundException) {
         }
         try {
             Class.forName(jakarta_className)
-            foundJakarta = true
+            list.add(jakarta_className)
+            kind = "jakarta"
         } catch (_: ClassNotFoundException) {
         }
 
-        if(!foundJavax && !foundJakarta)
-            logger.warn("Unable to locate expected class {} or {} on XJC visible ClassPath, maybe you have used one or more xjcTool terms and need to also include *.bind-api in an additional xjcTool option.",
-                javax_className, jakarta_className)
+        if(list.isEmpty())
+            logger.warn("Unable to locate expected class {} or {} or {} on XJC visible ClassPath, maybe you have used one or more xjcTool terms and need to also include *.bind-api in an additional xjcTool option.",
+                jakarta_className, javax_className, javax_legacy_className)
 
-        if(foundJavax && foundJakarta)
-            logger.warn("Found both {} and {} on XJC visible ClassPath, usually you only need one of these.",
-                javax_className, jakarta_className)
+        if(list.size > 1 && list.contains(jakarta_className))
+            logger.warn("Found multiple bind-api.jar on XJC visible ClassPath, usually you only need one of these. [{}]",
+                list.joinToString())
+        else
+            logger.info("Found bind-api.jar on XJC visible ClassPath, detected kind: {} [{}]",
+                kind, list.joinToString())
     }
 
     protected open fun doExecute(options: Options) {
