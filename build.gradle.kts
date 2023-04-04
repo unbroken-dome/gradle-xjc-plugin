@@ -99,7 +99,7 @@ dependencies {
     "integrationTestImplementation"(gradleTestKit())
     "integrationTestImplementation"("org.junit.jupiter:junit-jupiter-api:5.7.0")
     "integrationTestImplementation"("org.junit.platform:junit-platform-commons:1.7.0")
-    "integrationTestImplementation"("org.ow2.asm:asm:9.4")
+    "integrationTestImplementation"("org.ow2.asm:asm:9.5")
     "integrationTestRuntimeOnly"("org.junit.jupiter:junit-jupiter-engine:5.7.0")
 }
 
