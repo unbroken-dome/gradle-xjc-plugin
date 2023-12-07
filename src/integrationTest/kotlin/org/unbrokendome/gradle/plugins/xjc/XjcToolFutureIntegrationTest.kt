@@ -18,6 +18,7 @@ import java.io.File
 @UseSampleProject("xjc-tool-future")
 class XjcToolFutureIntegrationTest : AbstractBasicIntegrationTest() {
 
+    @Suppress("UNUSED_PARAMETER")
     // Disabled to enable this test with we ideally need to supply an XJC
     // Tool implementation that has a future version such as in the
     // MANIFEST.MF:
