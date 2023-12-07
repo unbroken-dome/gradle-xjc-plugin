@@ -14,7 +14,12 @@ endif::[]
 
 ifdef::env-github[]
 image:{img-build-status}[CI-Gradle-build,link={uri-build-status}]
-#CI Targets: `Java 8` and `Java 11` with `Gradle 5.6` through `Gradle 8.0.2`#
+
+#CI Targets: `Java 8` and `Java 11` for plugin project builder#
+
+#Plugin artifact supports `Java 8`, `Java 11`, `Java 17` and `Java 21`#
+
+#For use with `Gradle 5.6` through `Gradle 8.5`#
 endif::[]
 
 = Gradle XJC Plugin
@@ -36,15 +41,19 @@ Invokes the `xjc` binding compiler from a Gradle build.
 - Producing and consuming episodes.
 - Dependency based catalog sources with `maven:` and `classpath:` URI resolution (similar to
   maven-jaxb2-plugin) as well as the standard file,jar,jar:file,http,https sources.
-- XJC tool plugin extention support, including custom plugins you may provide an implementation
+- XJC tool plugin extension support, including custom plugins you may provide an implementation
   for.
 
 == Requirements
 
 The Gradle plugin itself:
 
-- Gradle 5.6 or higher
+- Gradle 5.6 or higher including
+* 5.6 or later using JDK8 or JDK11
+* 7.3 or later using JDK8, JDK11 or JDK17
+* 8.5 or later using JDK8, JDK11, JDK17 or JDK21
 - JDK 1.8 or higher (when running Gradle)
+- See also Gradle build tool Java compatibility matrix at https://docs.gradle.org/current/userguide/compatibility.html for which this plugin is consistent with
 
 The XJC Tool requirements:
 
@@ -59,7 +68,7 @@ The XJC Tool requirements:
 
 == Quick Start
 
-Apply the `org.unbroken-dome.xjc` plugin to your Gradle build script and add an appropriate
+Apply the `{maven-groupId}.xjc` plugin to your Gradle build script and add an appropriate
 dependency on the JAXB API:
 
 ifdef::env-github[]
@@ -67,19 +76,25 @@ ifdef::env-github[]
 .settings.gradle(.kts)
 ----
 pluginManagement {
-    // 3rd party releases and SNAPSHOTs
-    maven {
-        url "{github-pages-uri}/java8/maven2"
-        // url "{github-m2-uri}"
-        content {
-            // this repository *only* contains artifacts for specific groups
-            includeGroup "org.unbroken-dome.xjc"
-            includeGroup "org.unbroken-dome.gradle-plugins"
+    repositories {
+        maven {
+            //url = uri("{github-pages-uri}/java8/maven2")
+            url = uri("{github-m2-uri}")
+            content {
+                // this repository *only* contains artifacts for specific groups
+                includeGroup("org.unbroken-dome.xjc")
+                includeGroup("org.unbroken-dome")
 ifdef::env-github[]
 
-            includeGroup "{maven-groupId}.xjc"
-            includeGroup "{maven-groupId}.gradle-plugins"
+                includeGroup("{maven-groupId}.xjc")
+                includeGroup("{maven-groupId}")
 endif::[]
+            }
+            credentials {
+                // github requires any valid credentials even to GET packages
+                username = System.getenv("GITHUB_USERNAME")
+                password = System.getenv("GITHUB_TOKEN")
+            }
         }
     }
 
@@ -89,11 +104,11 @@ endif::[]
 ----
 
 endif::[]
-[source,kotlin]
+[source,kotlin,subs="normal"]
 .build.gradle(.kts)
 ----
 plugins {
-    id("org.unbroken-dome.xjc") version "2.1.0-SNAPSHOT"
+    id("{maven-groupId}.xjc") version "2.1.0-SNAPSHOT"
 }
 
 dependencies {

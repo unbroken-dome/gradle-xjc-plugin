@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm")
     `java-gradle-plugin`
     `maven-publish`
-    id("org.unbroken-dome.test-sets") version "4.0.0"
+    id("org.unbroken-dome.test-sets") // version "$testSetsVersion"
     id("com.gradle.plugin-publish") version "0.21.0"
     id("org.asciidoctor.convert") version "2.4.0"
     id("org.jetbrains.dokka") version "0.10.1"
@@ -10,6 +10,7 @@ plugins {
 
 
 val kotlinVersion: String by extra
+val testSetsVersion: String by extra
 
 
 repositories {
