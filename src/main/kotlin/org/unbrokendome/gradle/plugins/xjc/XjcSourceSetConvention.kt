@@ -11,7 +11,6 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 import org.gradle.util.ConfigureUtil
-import org.gradle.util.GUtil
 import javax.inject.Inject
 
 
@@ -204,9 +203,33 @@ abstract class XjcSourceSetConvention
         if (sourceSet.name == SourceSet.MAIN_SOURCE_SET_NAME) name else "${sourceSet.name}${name.capitalize()}"
 
 
+    companion object {
+        // This was originally org.gradle.util.GUtil.toWords(String?) before it was deprecated by Gradle 9.0
+        fun toWords(s: String?): String? {
+            if (s == null)
+                return null
+            if (s.isEmpty())
+                return ""
+
+            return s.split(Regex("[^A-Za-z0-9]+"))
+                // camelCase => camel Case
+                .map { it.replace(Regex("([a-z0-9])([A-Z])"), { mr -> mr.groupValues.drop(1).joinToString(" ") }) }
+                // camelCASE => camel CASE
+                .map { it.replace(Regex("([a-z0-9])([A-Z]+)"), { mr -> mr.groupValues.drop(1).joinToString(" ") }) }
+                // CAMELcase => CAME Lcase
+                .map {
+                    it.replace(
+                        Regex("([A-Z]+)([A-Z][a-z0-9]+)"),
+                        { mr -> mr.groupValues.drop(1).joinToString(" ") })
+                }
+                .map { it.toLowerCase() }
+                .joinToString(" ")
+        }
+    }
+
     init {
         val sourceSetName = sourceSet.name
-        val displayName = GUtil.toWords(sourceSetName)
+        val displayName = toWords(sourceSetName)
 
         xjcSchema = objects.sourceDirectorySet("xjcSchema", "$displayName XJC schema").apply {
             include("**/*.xsd")
