@@ -1,0 +1,481 @@
+name: CI-Gradle-canary-consume
+# This build exists to test compatibility of the plugin produces with the latest Gradle version
+# This is checking and reporting about the user perspective of consuming this plugin
+# This also indirectly tests against JVM updates as well but that is not considered the main focus
+#
+# So I'm calling this a canary as it provides an early warning after a new official Gradle release
+# of consumer issues.  We do not test release candidates or against any Gradle builds that are not
+# an official release as there is no maintenance capacity to keep uptodate with daily issues from
+# doing this not any reason to thing doing this will improve the quality of the plugin.
+#
+# Gradle publishes public data to in this area to help with automation:
+#   https://services.gradle.org/versions/
+#   https://raw.githubusercontent.com/gradle/gradle/master/released-versions.json
+
+## TODO build project test, using newer Gradle versions, setup matrix of useful version
+## TODO run deprecation test turn on warnings, collect output to summary
+## TODO emit compile log output warnings to summary
+
+on:
+  workflow_dispatch:
+    inputs:
+      GRADLE_TARGET_ENABLE_integrationTest:
+        description: 'Run with integrationTest ?'
+        default: true
+        type: boolean
+  schedule:
+    # setup weekly canary consume
+    - cron: '45 4 * * 6'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GHA_INPUT_BUILD_JVM: 8
+      GRADLE_EXTRA_ARGS: --no-daemon
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: GHA Option Setup
+        run: |
+          if [ -f "original/gradle.properties" ]
+          then
+            gradle_properties_path="original/gradle.properties"
+          else
+            gradle_properties_path="gradle.properties"
+          fi
+
+          if [ -z "${GRADLE_TARGET_ENABLE_integrationTest}" ] && [ -n "${{ github.event.schedule }}" ]; then
+            # force this on for schedule build
+            # "${{ github.event.schedule }}" == "45 4 18 * *"
+            # $GITHUB_EVENT_NAME == "schedule"
+            echo "GRADLE_TARGET_ENABLE_integrationTest=true" >> $GITHUB_ENV
+          fi
+          target_plugin="org.unbroken-dome.xjc"
+          target_group=$(grep "^group=" $gradle_properties_path | cut -d'=' -f2-)
+          target_artifact="gradle-xjc-plugin"
+          target_version=$(grep "^version=" $gradle_properties_path | cut -d'=' -f2-)
+
+          echo "target_plugin=$target_plugin" >> $GITHUB_ENV
+          echo "target_group=$target_group" >> $GITHUB_ENV
+          echo "target_artifact=$target_artifact" >> $GITHUB_ENV
+          echo "target_version=$target_version" >> $GITHUB_ENV
+
+      - name: Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: ${{ env.GHA_INPUT_BUILD_JVM }}
+
+      - name: Gradle - wrapper-validation-action
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Gradle - setup
+        uses: gradle/gradle-build-action@v2
+
+      - name: Report Versions
+        run: |
+          # Print verbose diagnostics into logs
+          java -version
+
+          # download-artifact removes executable perm from files
+          test -x ./gradlew || chmod -c a+x ./gradlew
+          # Now run it
+          ./gradlew -v
+
+          JAVA_ARG_VERSION=$(java -version 2>&1 | sed -e ':a;N;$!ba;s/\n/<br>/g' -e 's#|#\\|#g')
+          JAVA_ARG_VERSION_SUMMARY=$(java -version 2>&1 | head -n1 | sed -e 's#openjdk\s\+##' -e 's#version\s\+##' -e 's#"##g' -e 's#\s\+.*$##')
+          GRADLE_ARG_VERSION=$(./gradlew -v 2>&1 | sed -e ':a;N;$!ba;s/\n/<br>/g' -e 's#|#\\|#g')
+          GRADLE_WRAPPER_VERSION=$(egrep "^distributionUrl\s*=" gradle/wrapper/gradle-wrapper.properties | sed -e 's#^.*=##' -e 's#.*distributions/##' -e 's#^gradle\-##' -e 's#\-.*$##')
+
+          cat <<EOF >> /tmp/GITHUB_STEP_SUMMARY$$.txt
+          Gradle Version $GRADLE_VERSION (wrapper ${GRADLE_WRAPPER_VERSION})  JDK $JAVA_ARG_VERSION_SUMMARY (${{ env.GHA_INPUT_BUILD_JVM }})
+
+          | Package    | Details               |
+          | ---------- | --------------------- |
+          | Java       | ${JAVA_ARG_VERSION}   |
+          | Gradle     | ${GRADLE_ARG_VERSION} |
+          EOF
+
+          cat /tmp/GITHUB_STEP_SUMMARY$$.txt
+          cat /tmp/GITHUB_STEP_SUMMARY$$.txt >> $GITHUB_STEP_SUMMARY
+
+      - name: Gradle - dependencies
+        env: # to resolve artifacts from GH packages
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew $GRADLE_EXTRA_ARGS dependencies
+
+      - name: Gradle - assemble
+        env: # to resolve artifacts from GH packages
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew $GRADLE_EXTRA_ARGS assemble
+
+      - name: Gradle - check
+        run: ./gradlew $GRADLE_EXTRA_ARGS check
+
+      - name: Gradle - integrationTest
+        if: ${{ vars.GRADLE_TARGET_ENABLE_integrationTest == 'true' || inputs.GRADLE_TARGET_ENABLE_integrationTest }}
+        run: ./gradlew $GRADLE_EXTRA_ARGS "-Dorg.unbrokendome.gradle.plugins.xjc.testutil.GradleVersions=${GRADLE_VERSION}" integrationTest
+
+      - name: Gradle - asciidoctor
+        run: ./gradlew $GRADLE_EXTRA_ARGS asciidoctor
+
+      - name: Gradle - dokka
+        run: ./gradlew $GRADLE_EXTRA_ARGS dokka
+
+      - name: Gradle - publish
+        run: ./gradlew $GRADLE_EXTRA_ARGS publish
+
+      - name: Gradle - deprecation check
+        run: ./gradlew $GRADLE_EXTRA_ARGS publish
+
+      - name: Upload - prepare
+        if: true  # ${{ matrix.os == 'ubuntu-latest' }}
+        shell: bash
+        run: |
+          mkdir dist
+          _build_repo_list=$(find . -type d -path "*/build/repo")
+          if [ -n "${_build_repo_list}" ]
+          then
+            for dir in ${_build_repo_list}
+            do
+              cp -a "$dir" "dist/"
+            done
+          else
+            echo "$0: no **/build/repo directories found" 1>&2
+          fi
+          find "dist" -type f -exec ls -ld {} \;
+          du -s "dist"
+
+          mkdir -p build/gh-pages
+          [ -d build/reports/tests  ] && cp -a build/reports/tests    build/gh-pages/
+          [ -d build/asciidoc/html5 ] && cp -a build/asciidoc/html5/* build/gh-pages/
+          [ -d build/dokka          ] && cp -a build/dokka            build/gh-pages/
+
+          mkdir -p build/gh-pages/maven2
+          [ -d "build/repo" ] && cp -a build/repo/* build/gh-pages/maven2/
+
+          ls -lad build/gh-pages
+          du -s build/gh-pages
+
+      - name: Upload - java${{ matrix.jvm }}-gradle${{ matrix.gradle }}-github-pages
+        uses: actions/upload-pages-artifact@main
+        if: false
+        with:
+          name: java${{ matrix.jvm }}-github-pages
+          path: build/gh-pages/
+          retention-days: 1
+
+      - name: Upload - perform
+        uses: actions/upload-artifact@v3
+        if: true  # ${{ matrix.os == 'ubuntu-latest' }}
+        with:
+          name: java${{ env.GHA_INPUT_BUILD_JVM }}-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-build-artifacts
+          path: '*'
+          if-no-files-found: error
+
+  
+  # Now we have the plugin built using release engineering settings (such as Java8 built with Gradle 6.6.1)
+  #  we now consume it and perform tests across multiple JVMs and Gradle combintations.  The integrationTest
+  #  matrix suite already gets the project a long way there on this.
+  # TODO use a plugin repository source override to be the build/repo/** output directory from 'build' job.
+  #  Then switch the checkout/download-artifact to place the downloaded copy in a subdir and provide options
+  #  to ensure gradle.  Need to execute 
+  consume:
+    needs: build
+    strategy:
+      max-parallel: 3
+      matrix:
+        # Maintenance update as necessary the expected latest Gradle version supports the JVM matrix listed
+        os: [ubuntu-latest]
+        jvm: ['8', '11', '17', '21']
+        gradle: [
+          'latest',
+          '8',
+          '8.5',   # JDK21
+          '7',
+          '7.6',
+          '7.3',   # JDK11
+          '6',
+          '6.6.1', # self-hosted build/consume
+          '5',
+          '5.6'
+        ]
+        exclude:
+          - jvm: 21
+            gradle: 7
+          - jvm: 21
+            gradle: 7.6
+          - jvm: 21
+            gradle: 7.3
+          - jvm: 21
+            gradle: 6
+          - jvm: 21
+            gradle: 6.6.1
+          - jvm: 21
+            gradle: 5
+          - jvm: 21
+            gradle: 5.6
+          - jvm: 17
+            gradle: 6
+          - jvm: 17
+            gradle: 6.6.1
+          - jvm: 17
+            gradle: 5
+          - jvm: 17
+            gradle: 5.6
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    env:
+      GRADLE_EXTRA_ARGS: -DexcludeDocsTasks=true --no-daemon --warning-mode=all
+      GHA_INPUT_BUILD_JVM: 8
+      
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: original
+
+      - name: GHA Option Setup
+        run: |
+          if [ -f "original/gradle.properties" ]
+          then
+            gradle_properties_path="original/gradle.properties"
+          else
+            gradle_properties_path="gradle.properties"
+          fi
+
+          if [ -z "${GRADLE_TARGET_ENABLE_integrationTest}" ] && [ -n "${{ github.event.schedule }}" ]; then
+            # force this on for schedule build
+            # "${{ github.event.schedule }}" == "45 4 18 * *"
+            # $GITHUB_EVENT_NAME == "schedule"
+            echo "GRADLE_TARGET_ENABLE_integrationTest=true" >> $GITHUB_ENV
+          fi
+          target_plugin="org.unbroken-dome.xjc"
+          target_group=$(grep "^group=" $gradle_properties_path | cut -d'=' -f2-)
+          target_artifact="gradle-xjc-plugin"
+          target_version=$(grep "^version=" $gradle_properties_path | cut -d'=' -f2-)
+
+          echo "target_plugin=$target_plugin" >> $GITHUB_ENV
+          echo "target_group=$target_group" >> $GITHUB_ENV
+          echo "target_artifact=$target_artifact" >> $GITHUB_ENV
+          echo "target_version=$target_version" >> $GITHUB_ENV
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: java${{ env.GHA_INPUT_BUILD_JVM }}-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-build-artifacts
+          path: .
+
+      - name: Matrix Check
+        run: |
+          pwd
+          ls -la
+          # TODO We restored the build, so the dist should not be here, when we use plugin respotory from local files dist/repo
+          #  we can check out clean project here and this move won't be needed
+          [ -d dist ] && mv -v dist dist_moved
+
+          ## Disable runs requesting invalid matrix (done via 'strategy.matrix.exclude' GHA setting)
+          # jvm=21 only latest 8.5
+          # jvm=17 only latest 8.5 7 7.6 7.3
+          # jvm=11 only latest 8.5 7 7.6 7.3 6 5 5.6
+          # jvm=8 only latest 8.5 7 7.6 7.3 6 5 5.6
+          # Resolve all values to actual value
+          # Remove duplicates (and alias runs)
+          if [ -z "${{ matrix.os }}" ]
+          then
+            echo "$0: matrix.os is not setup" 1>&2
+            exit 1
+          fi
+          if [ -z "${{ matrix.jvm }}" ]
+          then
+            echo "$0: matrix.jvm is not setup" 1>&2
+            exit 1
+          fi
+          if [ -z "${{ matrix.gradle }}" ]
+          then
+            echo "$0: matrix.gradle is not setup" 1>&2
+            exit 1
+          fi
+
+      - name: Gradle Version Setup
+        run: |
+          # 
+          curl -s "https://raw.githubusercontent.com/gradle/gradle/master/released-versions.json" > released-versions.json
+
+          # Only supporting 5.6 or newer
+          GRADLE_ALL_VERSIONS=$(jq '.finalReleases[].version' -r released-versions.json | sort -rn | tr '\n' ' ' | sed -e 's#\s5.5.1\s.*##')
+          echo "GRADLE_ALL_VERSIONS=$GRADLE_ALL_VERSIONS"
+
+          GRADLE_CANARY_VERSION=$(jq '.finalReleases[].version' -r released-versions.json | sort -rn | head -n1)
+          echo "GRADLE_CANARY_VERSION=$GRADLE_CANARY_VERSION"
+
+          GRADLE_CANARY_MAJOR=$(echo -n "$GRADLE_CANARY_VERSION" | cut -d '.' -f1)
+
+          regex_transform=$(echo -ne "${{ matrix.gradle }}" | sed -e 's#\.#\\\0#g')
+          GRADLE_MATRIX_VERSION=$(jq '.finalReleases[].version' -r released-versions.json | sort -rn | egrep -- "^${regex_transform}" | head -n1 | tr -d '\r\n')
+          echo "GRADLE_MATRIX_VERSION=$GRADLE_MATRIX_VERSION"
+
+          GRADLE_MATRIX_MAJOR=$(echo -n "$GRADLE_MATRIX_VERSION" | cut -d '.' -f1)
+
+          if gradlew -v || which gradlew
+          then
+            # confirm GHA didn't provide its own
+            echo "$0: ERROR ./gradlew appears to already be installed" 1>&2
+            exit 1
+          fi
+
+          if [ "${{ matrix.gradle }}" = "latest" ]
+          then
+            GRADLE_VERSION="$GRADLE_CANARY_VERSION"
+          else
+            GRADLE_VERSION="$GRADLE_MATRIX_VERSION"
+          fi
+          GRADLE_VERSION_MAJOR=$(echo -n "$GRADLE_VERSION" | cut -d '.' -f1)
+
+          # TODO disable duplicate runs which resolve to the same matrix versions
+          # latest 8 8.5 all resolve to 8.5 for example
+
+          echo "GRADLE_ALL_VERSIONS=$GRADLE_ALL_VERSIONS" >> $GITHUB_ENV
+          echo "GRADLE_CANARY_VERSION=$GRADLE_CANARY_VERSION" >> $GITHUB_ENV
+          echo "GRADLE_CANARY_MAJOR=$GRADLE_CANARY_MAJOR" >> $GITHUB_ENV
+          echo "GRADLE_MATRIX_VERSION=$GRADLE_MATRIX_VERSION" >> $GITHUB_ENV
+          echo "GRADLE_MATRIX_MAJOR=$GRADLE_MATRIX_MAJOR" >> $GITHUB_ENV
+          echo "GRADLE_VERSION=$GRADLE_VERSION" >> $GITHUB_ENV
+          echo "GRADLE_VERSION_MAJOR=$GRADLE_VERSION_MAJOR" >> $GITHUB_ENV
+
+          # Make the version so with wrapper edit
+          sed -e 's/^distributionUrl=/\#\0/' -i gradle/wrapper/gradle-wrapper.properties
+          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-all.zip" >> gradle/wrapper/gradle-wrapper.properties
+
+          test -f gradle.properties
+          # Fixup gradle.properties based on Gradle major used to build
+          sed -e 's/^kotlinVersion=/\#\0/'   -i gradle.properties
+          sed -e 's/^testSetsVersion=/\#\0/' -i gradle.properties
+          case "$GRADLE_VERSION_MAJOR" in
+            5|6) echo "kotlinVersion=1.3.72"  >> gradle.properties
+                 echo "testSetsVersion=3.0.1" >> gradle.properties
+                 ;;
+            7)   echo "kotlinVersion=1.6.21"  >> gradle.properties
+                 echo "testSetsVersion=4.0.0" >> gradle.properties
+                 ;;
+            8|*) echo "kotlinVersion=1.9.20"  >> gradle.properties
+                 if [ "${{ matrix.jvm }}" = "8" ]
+                 then
+                   echo "testSetsVersion=4.0.0" >> gradle.properties
+                 else
+                   # Needs Java11+
+                   echo "testSetsVersion=4.1.0" >> gradle.properties
+                 fi
+                 ;;
+          esac
+          echo "### gradle.properties:"
+          cat gradle.properties
+
+      - name: Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.jvm }}
+
+      - name: Gradle - wrapper-validation-action
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Gradle - setup
+        uses: gradle/gradle-build-action@v2
+
+      - name: Show Diff
+        run: |
+          git diff || true
+
+      - name: Report Versions
+        run: |
+          # Print verbose diagnostics into logs
+          java -version
+
+          # download-artifact removes executable perm from files
+          test -x ./gradlew || chmod -c a+x ./gradlew
+          # Now run it
+          ./gradlew -v
+
+          JAVA_ARG_VERSION=$(java -version 2>&1 | sed -e ':a;N;$!ba;s/\n/<br>/g' -e 's#|#\\|#g')
+          JAVA_ARG_VERSION_SUMMARY=$(java -version 2>&1 | head -n1 | sed -e 's#openjdk\s\+##' -e 's#version\s\+##' -e 's#"##g' -e 's#\s\+.*$##')
+          GRADLE_ARG_VERSION=$(./gradlew -v 2>&1 | sed -e ':a;N;$!ba;s/\n/<br>/g' -e 's#|#\\|#g')
+
+          cat <<EOF >> /tmp/GITHUB_STEP_SUMMARY$$.txt
+          Gradle Version $GRADLE_VERSION (${{ matrix.gradle }})  JDK $JAVA_ARG_VERSION_SUMMARY (${{ matrix.jvm }})
+
+          | Package    | Details               |
+          | ---------- | --------------------- |
+          | Java       | ${JAVA_ARG_VERSION}   |
+          | Gradle     | ${GRADLE_ARG_VERSION} |
+          EOF
+
+          cat /tmp/GITHUB_STEP_SUMMARY$$.txt
+          cat /tmp/GITHUB_STEP_SUMMARY$$.txt >> $GITHUB_STEP_SUMMARY
+
+      - name: Gradle - dependencies
+        env: # to resolve artifacts from GH packages
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew $GRADLE_EXTRA_ARGS dependencies
+
+      - name: Gradle - check
+        run: |
+          if ! ./gradlew $GRADLE_EXTRA_ARGS check
+          then
+            ./gradlew $GRADLE_EXTRA_ARGS --stacktrace check
+          fi
+
+      - name: Gradle - integrationTest [${{env.GRADLE_VERSION}}]
+        if: ${{ vars.GRADLE_TARGET_ENABLE_integrationTest == 'true' || inputs.GRADLE_TARGET_ENABLE_integrationTest }}
+        run: ./gradlew $GRADLE_EXTRA_ARGS "-Dorg.unbrokendome.gradle.plugins.xjc.testutil.GradleVersions=${GRADLE_VERSION}" integrationTest
+
+      - name: Gradle - integrationTest [all]
+        if: ${{ vars.GRADLE_TARGET_ENABLE_integrationTest == 'true' || inputs.GRADLE_TARGET_ENABLE_integrationTest }}
+        run: ./gradlew $GRADLE_EXTRA_ARGS integrationTest
+
+      - name: Upload - prepare
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        shell: bash
+        run: |
+          mkdir dist
+          _build_repo_list=$(find . -type d -path "*/build/repo")
+          if [ -n "${_build_repo_list}" ]
+          then
+            for dir in ${_build_repo_list}
+            do
+              cp -a "$dir" "dist/"
+            done
+          else
+            echo "$0: no **/build/repo directories found" 1>&2
+          fi
+          find "dist" -type f -exec ls -ld {} \;
+          du -s "dist"
+
+          mkdir -p build/gh-pages
+          [ -d build/reports/tests  ] && cp -a build/reports/tests    build/gh-pages/
+          [ -d build/asciidoc/html5 ] && cp -a build/asciidoc/html5/* build/gh-pages/
+          [ -d build/dokka          ] && cp -a build/dokka            build/gh-pages/
+
+          mkdir -p build/gh-pages/maven2
+          [ -d "build/repo" ] && cp -a build/repo/* build/gh-pages/maven2/
+
+          ls -lad build/gh-pages
+          du -s build/gh-pages
+
+      - name: Upload - java${{ matrix.jvm }}-gradle${{ matrix.gradle }}-github-pages
+        uses: actions/upload-pages-artifact@main
+        if: false
+        with:
+          name: java${{ matrix.jvm }}-github-pages
+          path: build/gh-pages/
+          retention-days: 1
+
+      - name: Upload - perform
+        uses: actions/upload-artifact@v3
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        with:
+          name: java${{ matrix.jvm }}-gradle${{ matrix.gradle }}-${{ env.target_version }}-consume-artifacts
+          path: dist/repo/*
+          if-no-files-found: warn
