@@ -17,6 +17,12 @@ fun Assert<BuildResult>.task(taskPath: String) =
     }
 
 
+fun Assert<BuildResult>.output() =
+    transform(name = "output") { actual ->
+        actual.output
+    }
+
+
 val Assert<BuildTask>.outcome: Assert<TaskOutcome>
     get() = transform(name = "$name outcome") { actual ->
         actual.outcome
