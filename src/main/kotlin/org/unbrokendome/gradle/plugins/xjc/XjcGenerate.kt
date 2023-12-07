@@ -51,8 +51,14 @@ abstract class XjcGenerate
         private val LEGACY_LATEST_SUPPORTED_VERSION = WorkActionClassNamesByVersion.entries
             .filter { it.value.endsWith("LegacyWorkAction") }
             .map { it.key }
-            .max()
-        private val HIGHEST_SUPPORTED_VERSION = WorkActionClassNamesByVersion.keys.max()
+            .fold("") { acc, it -> if (acc > it) acc else it }  // .max() but supported by all kotlin versions
+        private val HIGHEST_SUPPORTED_VERSION = WorkActionClassNamesByVersion.keys
+            .fold("") { acc, it -> if (acc > it) acc else it }  // .max() but supported by all kotlin versions
+
+        init {
+            assert(LEGACY_LATEST_SUPPORTED_VERSION.isNotEmpty())
+            assert(HIGHEST_SUPPORTED_VERSION.isNotEmpty())
+        }
     }
 
 
