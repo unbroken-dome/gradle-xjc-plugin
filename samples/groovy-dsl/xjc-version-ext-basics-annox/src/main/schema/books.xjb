@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxb:bindings
+        xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+        xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:annox="http://annox.dev.java.net"
+        xmlns:tns="http://unbroken-dome.org/gradle-xjc-plugin/samples/books"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/jaxb http://java.sun.com/xml/ns/jaxb/bindingschema_2_0.xsd"
+        jaxb:version="2.1">
+
+    <jaxb:bindings schemaLocation="books.xsd" node="/xs:schema">
+        <jaxb:bindings node="//xs:complexType[@name='bookType']">
+            <annox:annotateClass>@javax.xml.bind.annotation.XmlRootElement(name="BookTypeHasBeenRenamed")</annox:annotateClass>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='bookType']/xs:attribute[@name='author']">
+            <annox:annotate target="field">@javax.xml.bind.annotation.XmlAttribute(required=false, name="authorFieldHasBeenRenamed")</annox:annotate>
+        </jaxb:bindings>
+    </jaxb:bindings>
+
+</jaxb:bindings>
