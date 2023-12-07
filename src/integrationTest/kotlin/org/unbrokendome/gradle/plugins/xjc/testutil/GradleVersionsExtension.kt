@@ -55,7 +55,11 @@ class GradleVersionsExtension : TestTemplateInvocationContextProvider {
             return Stream.empty()
         }
 
-        return versions.asSequence()
+        // support for CI canary testing -Dorg.unbrokendome.gradle.plugins.xjc.testutil.GradleVersions=99.0,98.0.1
+        val propValue = System.getProperty(GradleVersions::class.java.name)?.trim()
+        val versionsAfterPropertyOverride = if(propValue?.isNotBlank() == true) listOf(propValue) else versions
+
+        return versionsAfterPropertyOverride.asSequence()
             .flatMap { gradleVersions ->
                 gradleVersions.splitToSequence(',').map { it.trim() }
             }

@@ -142,6 +142,11 @@ tasks.withType<Test> {
     doFirst {
         project.mkdir(tmpDir)
     }
+
+    // ensure custom system properties are exposed to testing from CI
+    System.getProperties().filter { it.key.toString().startsWith("org.unbrokendome.gradle.plugins.xjc") }
+        .forEach { (t, u) -> systemProperty(t.toString(), u ?: "") }
+
 }
 
 
