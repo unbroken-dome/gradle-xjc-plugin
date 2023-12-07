@@ -59,6 +59,11 @@ abstract class XjcGenerate
             assert(LEGACY_LATEST_SUPPORTED_VERSION.isNotEmpty())
             assert(HIGHEST_SUPPORTED_VERSION.isNotEmpty())
         }
+
+        fun resolveArtifactsForMavenUri(configuration: Configuration): MutableList<SerializableResolvedArtifact> {
+            val artifacts = configuration.resolvedConfiguration.lenientConfiguration.artifacts
+            return artifacts.map { SerializableResolvedArtifact(it) }.toMutableList()
+        }
     }
 
 
@@ -124,8 +129,8 @@ abstract class XjcGenerate
     /**
      * A [Configuration] to be used for catalog resolution with the `maven:` URI scheme.
      */
-    @get:[InputFiles Optional Classpath]
-    abstract val catalogResolutionClasspath: Property<Configuration>
+    @get:[Input Optional]
+    abstract val catalogSerializableResolvedArtifact: ListProperty<SerializableResolvedArtifact>
 
 
     /**
@@ -329,12 +334,7 @@ abstract class XjcGenerate
         parameters.bindingFiles.setFrom(bindingFiles)
         parameters.pluginClasspath.setFrom(pluginClasspath)
         parameters.catalogFiles.setFrom(catalogs)
-        parameters.catalogResolvedArtifacts.set(
-            catalogResolutionClasspath.map { configuration ->
-                configuration.resolvedConfiguration.lenientConfiguration.artifacts
-                    .map { SerializableResolvedArtifact(it) }
-            }
-        )
+        parameters.catalogResolvedArtifacts.set(catalogSerializableResolvedArtifact)
         parameters.episodes.setFrom(episodes)
         parameters.targetPackage.set(targetPackage)
         parameters.encoding.set(encoding)

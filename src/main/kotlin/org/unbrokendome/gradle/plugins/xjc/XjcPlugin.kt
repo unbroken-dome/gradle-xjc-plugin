@@ -136,7 +136,7 @@ class XjcPlugin : Plugin<Project> {
                     task.catalogs.setFrom(xjcSourceSetConvention.xjcCatalog)
 
                     task.pluginClasspath.setFrom(xjcClasspathConfiguration)
-                    task.catalogResolutionClasspath.set(catalogResolutionConfiguration)
+                    task.catalogSerializableResolvedArtifact.set(project.provider { XjcGenerate.resolveArtifactsForMavenUri(catalogResolutionConfiguration) })
                     task.episodes.setFrom(episodesConfiguration)
 
                     task.targetPackage.set(xjcSourceSetConvention.xjcTargetPackage)

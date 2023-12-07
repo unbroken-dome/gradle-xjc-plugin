@@ -159,10 +159,11 @@ object XjcGenerateTest : Spek({
         it("should use the catalog resolution classpath") {
             val task = project.tasks.getByName("xjcGenerate") as XjcGenerate
             val catalogResolutionConfig = project.configurations.getByName("xjcCatalogResolution")
+            val resolved = XjcGenerate.resolveArtifactsForMavenUri(catalogResolutionConfig)
 
             assertThat(task, name = "task").all {
-                prop(XjcGenerate::catalogResolutionClasspath)
-                    .hasValueEqualTo(catalogResolutionConfig)
+                prop(XjcGenerate::catalogSerializableResolvedArtifact)
+                    .hasValueEqualTo(resolved)
             }
         }
 
