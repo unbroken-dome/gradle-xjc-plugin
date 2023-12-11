@@ -6,10 +6,12 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.internal.HasConvention
 import org.gradle.api.plugins.JavaBasePlugin
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.util.GradleVersion
 import org.unbrokendome.gradle.plugins.xjc.internal.GRADLE_VERSION_6_1
 import org.unbrokendome.gradle.plugins.xjc.internal.MIN_REQUIRED_GRADLE_VERSION
+import java.io.File
 
 
 class XjcPlugin : Plugin<Project> {
@@ -153,12 +155,21 @@ class XjcPlugin : Plugin<Project> {
 
                 val xjcOutputDir = generateTask.flatMap { it.outputDirectory }
 
+                // Gradle 6.1 introduced new API and 8.x removed the setOutputDir(File) method, so we can use reflection
                 if (GradleVersion.current() >= GRADLE_VERSION_6_1) {
-                    xjcSourceSetConvention.xjcSchema.destinationDirectory.set(xjcOutputDir)
+                    val destinationDirectory = reflectMethodAndInvoke(xjcSourceSetConvention.xjcSchema,
+                        "getDestinationDirectory")
+                    reflectMethodAndInvoke(destinationDirectory!!,
+                        "set", arrayOf(Provider::class.java), arrayOf(xjcOutputDir))
+                    // The intention is to maintain compatibility with Gradle 5.6+ and 8.x
+                    //xjcSourceSetConvention.xjcSchema.destinationDirectory.set(xjcOutputDir)
                     sourceSet.java.srcDir(xjcOutputDir)
                 } else {
-                    xjcSourceSetConvention.xjcSchema.outputDir =
-                        project.file(generateTask.flatMap { it.outputDirectory })
+                    reflectMethodAndInvoke(xjcSourceSetConvention.xjcSchema,
+                        "setOutputDir", arrayOf(File::class.java), arrayOf(project.file(generateTask.flatMap { it.outputDirectory })))
+                    // The intention is to maintain compatibility with Gradle 5.6+ and 8.x
+                    //xjcSourceSetConvention.xjcSchema.outputDir =
+                    //    project.file(generateTask.flatMap { it.outputDirectory })
                     sourceSet.java.srcDir(xjcOutputDir)
                 }
 
@@ -167,6 +178,13 @@ class XjcPlugin : Plugin<Project> {
                 )
             }
         }
+    }
+
+
+    // Perform method invocation via reflection API (to maintain compile time compatability with older Gradle versions)
+    private fun reflectMethodAndInvoke(target: Any, methodName: String, methodParameters: Array<Class<*>> = emptyArray(), values: Array<Any?> = emptyArray()): Any? {
+        val method = if(methodParameters.isNotEmpty()) target.javaClass.getMethod(methodName, *methodParameters) else target.javaClass.getMethod(methodName)
+        return if(values.isNotEmpty()) method.invoke(target, *values) else method.invoke(target)
     }
 
 
