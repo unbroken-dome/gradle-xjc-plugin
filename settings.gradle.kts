@@ -15,3 +15,9 @@ pluginManagement {
 }
 
 rootProject.name = "gradle-xjc-plugin"
+
+if(System.getProperty("excludeDocsTasks") == null) {
+    include(":docs")
+} else {
+    logger.warn("systemProperty \"excludeDocsTasks\" is present, causing project :docs exclusion")
+}

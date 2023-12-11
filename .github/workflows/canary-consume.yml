@@ -151,8 +151,11 @@ jobs:
 
           mkdir -p build/gh-pages
           [ -d build/reports/tests  ] && cp -a build/reports/tests    build/gh-pages/
-          [ -d build/asciidoc/html5 ] && cp -a build/asciidoc/html5/* build/gh-pages/
-          [ -d build/dokka          ] && cp -a build/dokka            build/gh-pages/
+
+          docs_build_dir="build"
+          [ -d docs/build ] && docs_build_dir="docs/build" || true
+          [ -d $docs_build_dir/asciidoc/html5 ] && cp -a $docs_build_dir/asciidoc/html5/* build/gh-pages/
+          [ -d $docs_build_dir/dokka          ] && cp -a $docs_build_dir/dokka            build/gh-pages/
 
           mkdir -p build/gh-pages/maven2
           [ -d "build/repo" ] && cp -a build/repo/* build/gh-pages/maven2/
@@ -455,8 +458,11 @@ jobs:
 
           mkdir -p build/gh-pages
           [ -d build/reports/tests  ] && cp -a build/reports/tests    build/gh-pages/
-          [ -d build/asciidoc/html5 ] && cp -a build/asciidoc/html5/* build/gh-pages/
-          [ -d build/dokka          ] && cp -a build/dokka            build/gh-pages/
+
+          docs_build_dir="build"
+          [ -d docs/build ] && docs_build_dir="docs/build" || true
+          [ -d $docs_build_dir/asciidoc/html5 ] && cp -a $docs_build_dir/asciidoc/html5/* build/gh-pages/
+          [ -d $docs_build_dir/dokka          ] && cp -a $docs_build_dir/dokka            build/gh-pages/
 
           mkdir -p build/gh-pages/maven2
           [ -d "build/repo" ] && cp -a build/repo/* build/gh-pages/maven2/

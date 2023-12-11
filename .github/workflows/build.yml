@@ -97,8 +97,11 @@ jobs:
 
           mkdir -p build/gh-pages
           cp -a build/reports/tests build/gh-pages/
-          cp -a build/asciidoc/html5/* build/gh-pages/
-          cp -a build/dokka build/gh-pages/
+
+          docs_build_dir="build"
+          [ -d docs/build ] && docs_build_dir="docs/build" || true
+          cp -a $docs_build_dir/asciidoc/html5/* build/gh-pages/
+          cp -a $docs_build_dir/dokka build/gh-pages/
 
           mkdir -p build/gh-pages/maven2
           cp -a build/repo/* build/gh-pages/maven2/

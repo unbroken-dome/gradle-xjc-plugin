@@ -4,8 +4,6 @@ plugins {
     `maven-publish`
     id("org.unbroken-dome.test-sets") // version "$testSetsVersion"
     id("com.gradle.plugin-publish") version "0.21.0"
-    id("org.asciidoctor.convert") version "2.4.0"
-    id("org.jetbrains.dokka") version "0.10.1"
 }
 
 
@@ -227,51 +225,6 @@ pluginBundle {
 }
 
 
-tasks.named("dokka", org.jetbrains.dokka.gradle.DokkaTask::class) {
-    outputFormat = "html"
-    configuration {
-        externalDocumentationLink {
-            url = uri("https://docs.gradle.org/current/javadoc/").toURL()
-        }
-        reportUndocumented = false
-        sourceLink {
-            path = "src/main/kotlin"
-            url = "https://github.com/${githubRepositoryOwner}/gradle-xjc-plugin/blob/v${project.version}/src/main/kotlin"
-            lineSuffix = "#L"
-        }
-        perPackageOption {
-            prefix = "org.unbrokendome.gradle.plugins.xjc.internal"
-            suppress = true
-        }
-    }
-}
-
-
-asciidoctorj {
-    version = "2.4.1"
-}
-
-dependencies {
-    "asciidoctor"("com.bmuschko:asciidoctorj-tabbed-code-extension:0.3")
-}
-
-
-tasks.named("asciidoctor", org.asciidoctor.gradle.AsciidoctorTask::class) {
-    sourceDir("docs")
-    sources(delegateClosureOf<PatternSet> { include("index.adoc") })
-
-    options(mapOf(
-        "doctype" to "book"
-    ))
-    attributes(mapOf(
-        "GITHUB_REPOSITORY_OWNER" to githubRepositoryOwner,
-        "github-pages-uri" to "https://${githubRepositoryOwner}.github.io/gradle-xjc-plugin",
-        "github-uri" to "https://github.com/${githubRepositoryOwner}/gradle-xjc-plugin",
-        "project-version" to project.version,
-        "source-highlighter" to "prettify"
-    ))
-}
-
 apply {
-     from("${rootDir}/publish.gradle.kts")
+    from("${rootDir}/publish.gradle.kts")
 }
