@@ -128,6 +128,12 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions.freeCompilerArgs = listOf("-Xjvm-default=enable")
 }
 
+// There is no *.java code in this project but newer Gradle complains if there
+// is a mismatch with kotlin due to the runtime JDK being newer than kotlin target.
+tasks.withType<JavaCompile> {
+    targetCompatibility = "1.8"
+}
+
 
 tasks.named<Jar>("jar") {
     for (xjcSourceSet in xjcSourceSets) {
