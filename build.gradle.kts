@@ -48,8 +48,19 @@ dependencies {
 
     for (xjcSourceSet in xjcSourceSets) {
         (xjcSourceSet.compileOnlyConfigurationName)(sourceSets["main"].output)
-        (xjcSourceSet.compileOnlyConfigurationName)(configurations["compileOnly"])
-        (xjcSourceSet.implementationConfigurationName)(configurations["implementation"])
+
+        // Gradle 8.x does not allow referencing configurations[] like this anymore
+        // but it seems a convenience to unroll the deplist
+
+        // for compileOnly()
+        //(xjcSourceSet.compileOnlyConfigurationName)(configurations["compileOnly"].allDependencies)
+        (xjcSourceSet.compileOnlyConfigurationName)(kotlin("stdlib-jdk8"))
+        (xjcSourceSet.compileOnlyConfigurationName)(gradleApi())
+
+        // for implementation()
+        //(xjcSourceSet.implementationConfigurationName)(configurations["implementation"].allDependencies)
+        (xjcSourceSet.implementationConfigurationName)("javax.activation:javax.activation-api:1.2.0")
+        (xjcSourceSet.implementationConfigurationName)("xml-resolver:xml-resolver:1.2")
     }
 
     "xjcCommonCompileOnly"("com.sun.xml.bind:jaxb-xjc:2.3.3")
