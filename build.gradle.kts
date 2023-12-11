@@ -125,7 +125,11 @@ configurations.all {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
-    kotlinOptions.freeCompilerArgs = listOf("-Xjvm-default=enable")
+    if(kotlinVersion >= "1.6.20") {
+        kotlinOptions.freeCompilerArgs = listOf("-Xjvm-default=all-compatibility")
+    } else {
+        kotlinOptions.freeCompilerArgs = listOf("-Xjvm-default=enable") // 1.3 thru 1.6.0 (not 1.6.20)
+    }
 }
 
 // There is no *.java code in this project but newer Gradle complains if there
