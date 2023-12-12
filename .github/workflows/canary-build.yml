@@ -175,9 +175,13 @@ jobs:
             8|*) echo "kotlinVersion=1.9.20"  >> gradle.properties
                  if [ "${{ matrix.jvm }}" = "8" ]
                  then
-                   echo "testSetsVersion=4.0.0" >> gradle.properties
+                   # The official org.unbroken-dome.test-sets 4.1.0 Needs Java11+ and is the first version to support Gradle 8.x
+                   #echo "testSetsVersion=4.0.0" >> gradle.properties
+                   # So this is why this if[] exists, but the we now use unofficial:
+                   #org.darrylmiles.repack.org.unbroken-dome.test-sets which a release in Java8 bytecode of 4.1.0
+                   echo "testSetsVersion=4.1.0" >> gradle.properties
                  else
-                   # Needs Java11+
+                   # The official org.unbroken-dome.test-sets 4.1.0 Needs Java11+
                    echo "testSetsVersion=4.1.0" >> gradle.properties
                  fi
                  ;;
