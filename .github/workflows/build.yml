@@ -46,7 +46,7 @@ jobs:
           echo "target_version=$target_version" >> $GITHUB_ENV
 
       - name: Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: ${{ matrix.jvm }}
