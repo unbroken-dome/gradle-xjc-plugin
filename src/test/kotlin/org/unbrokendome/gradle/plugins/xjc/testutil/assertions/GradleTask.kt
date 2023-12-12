@@ -18,7 +18,7 @@ val Assert<Task>.taskDependencies
 fun Assert<Task>.hasTaskDependency(taskName: String) = given { actual ->
     val dependencies = actual.taskDependencies.getDependencies(actual)
     if (dependencies.none { it.name == taskName }) {
-        expected("to have a dependency on task \"${taskName}\", but dependencies were: ${show(dependencies)}")
+        this.expected("to have a dependency on task \"${taskName}\", but dependencies were: ${show(dependencies)}")
     }
 }
 
@@ -26,7 +26,7 @@ fun Assert<Task>.hasTaskDependency(taskName: String) = given { actual ->
 fun Assert<Task>.hasOnlyTaskDependency(taskName: String) = given { actual ->
     val dependencies = actual.taskDependencies.getDependencies(actual)
     if (dependencies.size != 1 || dependencies.firstOrNull()?.name != taskName) {
-        expected("to have a single dependency on task \"${taskName}\", but dependencies were: ${show(dependencies)}")
+        this.expected("to have a single dependency on task \"${taskName}\", but dependencies were: ${show(dependencies)}")
     }
 }
 
@@ -49,20 +49,20 @@ fun Assert<Task>.hasTaskDependencies(vararg taskNames: String, exactly: Boolean 
 fun Assert<Task>.doesNotHaveTaskDependency(taskName: String) = given { actual ->
     val dependencies = actual.taskDependencies.getDependencies(actual)
     if (dependencies.any { it.name == taskName }) {
-        expected("to have no dependency on task \"${taskName}\", but dependencies were: ${show(dependencies)}")
+        this.expected("to have no dependency on task \"${taskName}\", but dependencies were: ${show(dependencies)}")
     }
 }
 
 
 fun Assert<Task>.isSkipped() = given { actual ->
     if (!actual.isSkipped()) {
-        expected("to be skipped, but was not skipped")
+        this.expected("to be skipped, but was not skipped")
     }
 }
 
 
 fun Assert<Task>.isNotSkipped() = given { actual ->
     if (actual.isSkipped()) {
-        expected("not to be skipped, but was skipped")
+        this.expected("not to be skipped, but was skipped")
     }
 }

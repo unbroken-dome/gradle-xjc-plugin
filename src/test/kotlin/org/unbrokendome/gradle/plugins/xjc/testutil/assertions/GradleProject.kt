@@ -11,7 +11,7 @@ import kotlin.reflect.KClass
 private fun Assert<Project>.containsTaskInternal(taskName: String) =
     transform("task \"$taskName\"") { actual ->
         actual.tasks.findByName(taskName)
-            ?: expected("to contain a task named \"$taskName\"")
+            ?: this.expected("to contain a task named \"$taskName\"")
     }
 
 
@@ -21,4 +21,4 @@ fun <T : Task> Assert<Project>.containsTask(taskName: String, taskType: KClass<T
 
 
 inline fun <reified T : Task> Assert<Project>.containsTask(taskName: String) =
-    containsTask(taskName, T::class)
+    this.containsTask(taskName, T::class)

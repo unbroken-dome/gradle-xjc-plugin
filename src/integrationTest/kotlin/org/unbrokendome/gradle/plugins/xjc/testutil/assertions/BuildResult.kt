@@ -13,7 +13,7 @@ import org.gradle.testkit.runner.TaskOutcome
 fun Assert<BuildResult>.task(taskPath: String) =
     transform(name = "task $taskPath") { actual ->
         actual.task(taskPath)
-            ?: expected("to include task '$taskPath', but was: ${show(actual.tasks.map { it.path })}")
+            ?: this.expected("to include task '$taskPath', but was: ${show(actual.tasks.map { it.path })}")
     }
 
 

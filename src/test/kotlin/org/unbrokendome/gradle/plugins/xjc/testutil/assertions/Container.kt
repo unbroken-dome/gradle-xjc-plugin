@@ -8,13 +8,13 @@ import org.gradle.api.NamedDomainObjectCollection
 
 fun <T : Any> Assert<NamedDomainObjectCollection<T>>.containsItem(name: String) =
     transform(name = "${this.name}[\"$name\"]") { actual ->
-        actual.findByName(name) ?: expected("to contain an item named \"$name\"", actual = actual.names)
+        actual.findByName(name) ?: this.expected("to contain an item named \"$name\"", actual = actual.names)
     }
 
 
 fun <T : Any> Assert<NamedDomainObjectCollection<T>>.doesNotContainItem(name: String) = given { actual ->
     val item = actual.findByName(name)
     if (item != null) {
-        expected("to contain no item named \"$name\", but did contain: ${show(item)}", actual = actual.names)
+        this.expected("to contain no item named \"$name\", but did contain: ${show(item)}", actual = actual.names)
     }
 }

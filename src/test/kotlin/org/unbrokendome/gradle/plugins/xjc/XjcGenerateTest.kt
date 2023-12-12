@@ -54,16 +54,16 @@ object XjcGenerateTest : Spek({
             }
 
             assertThat(task, "task").all {
-                prop(XjcGenerate::targetVersion).hasValueEqualTo("XYZ")
-                prop(XjcGenerate::encoding).hasValueEqualTo("ISO-8859-1")
-                prop(XjcGenerate::docLocale).hasValueEqualTo(Locale.ITALIAN.toString())
-                prop(XjcGenerate::strictCheck).isFalse()
-                prop(XjcGenerate::packageLevelAnnotations).isFalse()
-                prop(XjcGenerate::noFileHeader).isFalse()
-                prop(XjcGenerate::enableIntrospection).isTrue()
-                prop(XjcGenerate::contentForWildcard).isTrue()
-                prop(XjcGenerate::readOnly).isTrue()
-                prop(XjcGenerate::extension).isTrue()
+                this.prop(XjcGenerate::targetVersion).hasValueEqualTo("XYZ")
+                this.prop(XjcGenerate::encoding).hasValueEqualTo("ISO-8859-1")
+                this.prop(XjcGenerate::docLocale).hasValueEqualTo(Locale.ITALIAN.toString())
+                this.prop(XjcGenerate::strictCheck).isFalse()
+                this.prop(XjcGenerate::packageLevelAnnotations).isFalse()
+                this.prop(XjcGenerate::noFileHeader).isFalse()
+                this.prop(XjcGenerate::enableIntrospection).isTrue()
+                this.prop(XjcGenerate::contentForWildcard).isTrue()
+                this.prop(XjcGenerate::readOnly).isTrue()
+                this.prop(XjcGenerate::extension).isTrue()
             }
         }
 
@@ -104,9 +104,9 @@ object XjcGenerateTest : Spek({
 
         it("should create an XjcGenerate task for each existing source set") {
             assertThat(project.tasks, name = "tasks").all {
-                containsItem("xjcGenerate")
+                this.containsItem("xjcGenerate")
                     .isInstanceOf(XjcGenerate::class)
-                containsItem("xjcGenerateTest")
+                this.containsItem("xjcGenerateTest")
                     .isInstanceOf(XjcGenerate::class)
             }
         }
@@ -125,13 +125,13 @@ object XjcGenerateTest : Spek({
             }
 
             assertThat(task, name = "task").all {
-                prop(XjcGenerate::source)
+                this.prop(XjcGenerate::source)
                     .containsOnly(project.file("src/main/schema/schema.xsd"))
-                prop(XjcGenerate::bindingFiles)
+                this.prop(XjcGenerate::bindingFiles)
                     .containsOnly(project.file("src/main/schema/binding.xjb"))
-                prop(XjcGenerate::urlSources)
+                this.prop(XjcGenerate::urlSources)
                     .containsOnly(project.file("src/main/schema/externals.url"))
-                prop(XjcGenerate::catalogs)
+                this.prop(XjcGenerate::catalogs)
                     .containsOnly(project.file("src/main/schema/catalog.cat"))
             }
         }
@@ -148,9 +148,9 @@ object XjcGenerateTest : Spek({
             )
 
             assertThat(task, name = "task").all {
-                prop(XjcGenerate::pluginClasspath)
+                this.prop(XjcGenerate::pluginClasspath)
                     .containsOnly(project.file("custom-jaxb-plugin-1.2.3.jar"))
-                prop(XjcGenerate::episodes)
+                this.prop(XjcGenerate::episodes)
                     .containsOnly(project.file("custom-episode-1.2.3.jar"))
             }
         }
@@ -162,7 +162,7 @@ object XjcGenerateTest : Spek({
             val resolved = XjcGenerate.resolveArtifactsForMavenUri(catalogResolutionConfig)
 
             assertThat(task, name = "task").all {
-                prop(XjcGenerate::catalogSerializableResolvedArtifact)
+                this.prop(XjcGenerate::catalogSerializableResolvedArtifact)
                     .hasValueEqualTo(resolved)
             }
         }
@@ -178,9 +178,9 @@ object XjcGenerateTest : Spek({
             xjcSourceSetConvention.xjcGenerateEpisode.set(true)
 
             assertThat(task, name = "task").all {
-                prop(XjcGenerate::targetPackage)
+                this.prop(XjcGenerate::targetPackage)
                     .hasValueEqualTo("com.example")
-                prop(XjcGenerate::generateEpisode)
+                this.prop(XjcGenerate::generateEpisode)
                     .hasValueEqualTo(true)
             }
         }
@@ -211,9 +211,9 @@ object XjcGenerateTest : Spek({
             val task = project.tasks.getByName("xjcGenerate") as XjcGenerate
 
             assertThat(task, name = "task").all {
-                prop(XjcGenerate::outputDirectory)
+                this.prop(XjcGenerate::outputDirectory)
                     .dirValue().isEqualTo(project.file("build/generated/sources/xjc/java/main"))
-                prop(XjcGenerate::episodeOutputDirectory)
+                this.prop(XjcGenerate::episodeOutputDirectory)
                     .dirValue().isEqualTo(project.file("build/generated/resources/xjc/main"))
             }
         }

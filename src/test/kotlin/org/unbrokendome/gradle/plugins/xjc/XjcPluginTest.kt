@@ -9,15 +9,9 @@ import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.SourceSetContainer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import org.unbrokendome.gradle.plugins.xjc.testutil.assertions.containsItem
-import org.unbrokendome.gradle.plugins.xjc.testutil.assertions.hasConvention
-import org.unbrokendome.gradle.plugins.xjc.testutil.assertions.hasExtension
-import org.unbrokendome.gradle.plugins.xjc.testutil.assertions.hasValueEqualTo
 import org.unbrokendome.gradle.plugins.xjc.spek.applyPlugin
 import org.unbrokendome.gradle.plugins.xjc.spek.setupGradleProject
-import org.unbrokendome.gradle.plugins.xjc.testutil.assertions.extendsOnlyFrom
-import org.unbrokendome.gradle.plugins.xjc.testutil.assertions.isFalse
-import org.unbrokendome.gradle.plugins.xjc.testutil.assertions.isTrue
+import org.unbrokendome.gradle.plugins.xjc.testutil.assertions.*
 import org.unbrokendome.gradle.plugins.xjc.testutil.evaluate
 import org.unbrokendome.gradle.plugins.xjc.testutil.requiredExtension
 import org.unbrokendome.gradle.plugins.xjc.testutil.sourceSets
@@ -48,17 +42,17 @@ object XjcPluginTest : Spek({
         it("xjc DSL extension should apply defaults") {
             assertThat(project)
                 .hasExtension<XjcExtension>().all {
-                    prop(XjcExtension::xjcVersion).hasValueEqualTo(XjcExtension.DEFAULT_XJC_VERSION)
-                    prop(XjcExtension::xjcVersionUnsupportedStrategy).hasValueEqualTo(XjcExtension.DEFAULT_XJC_VERSION_UNSUPPORTED_STRATEGY)
-                    prop(XjcExtension::srcDirName).hasValueEqualTo(XjcExtension.DEFAULT_SRC_DIR_NAME)
-                    prop(XjcExtension::encoding).hasValueEqualTo("UTF-8")
-                    prop(XjcExtension::strictCheck).isTrue()
-                    prop(XjcExtension::packageLevelAnnotations).isTrue()
-                    prop(XjcExtension::noFileHeader).isTrue()
-                    prop(XjcExtension::enableIntrospection).isFalse()
-                    prop(XjcExtension::contentForWildcard).isFalse()
-                    prop(XjcExtension::readOnly).isFalse()
-                    prop(XjcExtension::extension).isFalse()
+                    this.prop(XjcExtension::xjcVersion).hasValueEqualTo(XjcExtension.DEFAULT_XJC_VERSION)
+                    this.prop(XjcExtension::xjcVersionUnsupportedStrategy).hasValueEqualTo(XjcExtension.DEFAULT_XJC_VERSION_UNSUPPORTED_STRATEGY)
+                    this.prop(XjcExtension::srcDirName).hasValueEqualTo(XjcExtension.DEFAULT_SRC_DIR_NAME)
+                    this.prop(XjcExtension::encoding).hasValueEqualTo("UTF-8")
+                    this.prop(XjcExtension::strictCheck).isTrue()
+                    this.prop(XjcExtension::packageLevelAnnotations).isTrue()
+                    this.prop(XjcExtension::noFileHeader).isTrue()
+                    this.prop(XjcExtension::enableIntrospection).isFalse()
+                    this.prop(XjcExtension::contentForWildcard).isFalse()
+                    this.prop(XjcExtension::readOnly).isFalse()
+                    this.prop(XjcExtension::extension).isFalse()
                 }
         }
 
@@ -81,28 +75,28 @@ object XjcPluginTest : Spek({
 
             assertThat(project)
                 .hasExtension<XjcExtension>().all {
-                    prop(XjcExtension::xjcVersion).hasValueEqualTo("3.0")
-                    prop(XjcExtension::xjcVersionUnsupportedStrategy).hasValueEqualTo("default")
-                    prop(XjcExtension::srcDirName).hasValueEqualTo("xjc")
-                    prop(XjcExtension::targetVersion).hasValueEqualTo("2.2")
-                    prop(XjcExtension::encoding).hasValueEqualTo("ISO-8859-1")
-                    prop(XjcExtension::docLocale).hasValueEqualTo(Locale.ITALIAN.toString())
-                    prop(XjcExtension::strictCheck).isFalse()
-                    prop(XjcExtension::packageLevelAnnotations).isFalse()
-                    prop(XjcExtension::noFileHeader).isFalse()
-                    prop(XjcExtension::enableIntrospection).isTrue()
-                    prop(XjcExtension::contentForWildcard).isTrue()
-                    prop(XjcExtension::readOnly).isTrue()
-                    prop(XjcExtension::extension).isTrue()
+                    this.prop(XjcExtension::xjcVersion).hasValueEqualTo("3.0")
+                    this.prop(XjcExtension::xjcVersionUnsupportedStrategy).hasValueEqualTo("default")
+                    this.prop(XjcExtension::srcDirName).hasValueEqualTo("xjc")
+                    this.prop(XjcExtension::targetVersion).hasValueEqualTo("2.2")
+                    this.prop(XjcExtension::encoding).hasValueEqualTo("ISO-8859-1")
+                    this.prop(XjcExtension::docLocale).hasValueEqualTo(Locale.ITALIAN.toString())
+                    this.prop(XjcExtension::strictCheck).isFalse()
+                    this.prop(XjcExtension::packageLevelAnnotations).isFalse()
+                    this.prop(XjcExtension::noFileHeader).isFalse()
+                    this.prop(XjcExtension::enableIntrospection).isTrue()
+                    this.prop(XjcExtension::contentForWildcard).isTrue()
+                    this.prop(XjcExtension::readOnly).isTrue()
+                    this.prop(XjcExtension::extension).isTrue()
                 }
         }
 
 
         it("should create global XJC configurations") {
             assertThat(project.configurations, "configurations").all {
-                containsItem("xjcTool")
-                containsItem("xjcClasspathGlobal")
-                containsItem("xjcCatalogResolutionGlobal")
+                this.containsItem("xjcTool")
+                this.containsItem("xjcClasspathGlobal")
+                this.containsItem("xjcCatalogResolutionGlobal")
             }
         }
     }
@@ -119,9 +113,9 @@ object XjcPluginTest : Spek({
             val sourceSets = project.extensions.getByType(SourceSetContainer::class.java)
 
             assertThat(sourceSets).all {
-                containsItem("main")
+                this.containsItem("main")
                     .hasConvention<XjcSourceSetConvention>()
-                containsItem("test")
+                this.containsItem("test")
                     .hasConvention<XjcSourceSetConvention>()
             }
         }
@@ -136,17 +130,17 @@ object XjcPluginTest : Spek({
 
         it("should create XJC configurations for each existing source set") {
             assertThat(project.configurations, name = "configurations").all {
-                containsItem("xjcClasspath")
+                this.containsItem("xjcClasspath")
                     .extendsOnlyFrom("xjcClasspathGlobal")
-                containsItem("xjcEpisodes")
-                containsItem("xjcCatalogResolution").all {
+                this.containsItem("xjcEpisodes")
+                this.containsItem("xjcCatalogResolution").all {
                     extendsOnlyFrom("xjcCatalogResolutionGlobal", "compileClasspath")
                 }
 
-                containsItem("testXjcClasspath")
+                this.containsItem("testXjcClasspath")
                     .extendsOnlyFrom("xjcClasspathGlobal")
-                containsItem("testXjcEpisodes")
-                containsItem("testXjcCatalogResolution").all {
+                this.containsItem("testXjcEpisodes")
+                this.containsItem("testXjcCatalogResolution").all {
                     extendsOnlyFrom("xjcCatalogResolutionGlobal", "testCompileClasspath")
                 }
             }
@@ -156,7 +150,7 @@ object XjcPluginTest : Spek({
         it("should create XJC configurations for each new source set") {
             project.sourceSets.create("foo")
             assertThat(project.configurations, name = "configurations").all {
-                containsItem("fooXjcClasspath")
+                this.containsItem("fooXjcClasspath")
                     .extendsOnlyFrom("xjcClasspathGlobal")
             }
         }

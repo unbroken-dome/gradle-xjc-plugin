@@ -14,31 +14,31 @@ import org.gradle.api.provider.Provider
 
 
 fun <T : Any?> Assert<Provider<T>>.isPresent() = transform { actual ->
-    actual.orNull ?: expected("${show(actual)} to have a value", actual = actual)
+    actual.orNull ?: this.expected("${show(actual)} to have a value", actual = actual)
 }
 
 
 fun Assert<Provider<Boolean>>.isTrue() =
-    isPresent().isTrue()
+    this.isPresent().isTrue()
 
 
 fun Assert<Provider<Boolean>>.isFalse() =
-    isPresent().isFalse()
+    this.isPresent().isFalse()
 
 
 fun <T : Any?> Assert<Provider<T>>.hasValueEqualTo(value: T) =
-    isPresent().isEqualTo(value)
+    this.isPresent().isEqualTo(value)
 
 
 fun Assert<Provider<RegularFile>>.fileValue() =
-    isPresent()
+    this.isPresent()
         .prop("file") { it.asFile }
 
 
 fun Assert<Provider<Directory>>.dirValue() =
-    isPresent()
+    this.isPresent()
         .prop("directory") { it.asFile }
 
 
 fun <K : Any, V : Any> Assert<Provider<Map<K, V>>>.contains(key: K, value: V) =
-    isPresent().contains(key, value)
+    this.isPresent().contains(key, value)
