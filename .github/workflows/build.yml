@@ -51,37 +51,32 @@ jobs:
           distribution: temurin
           java-version: ${{ matrix.jvm }}
 
-      - name: Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties', '**/gradle.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+      - name: Gradle - wrapper-validation-action
+        uses: gradle/wrapper-validation-action@v1
 
       - name: Gradle - setup
         uses: gradle/gradle-build-action@v2
 
-      - name: Gradle - build
-        run: ./gradlew build
+      - name: Gradle - assemble
+        env: # to resolve artifacts from GH packages
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew $GRADLE_EXTRA_ARGS assemble
 
       - name: Gradle - check
-        run: ./gradlew check
+        run: ./gradlew $GRADLE_EXTRA_ARGS check
 
       - name: Gradle - integrationTest
         if: ${{ vars.GRADLE_TARGET_ENABLE_integrationTest == 'true' || inputs.GRADLE_TARGET_ENABLE_integrationTest }}
-        run: ./gradlew integrationTest
+        run: ./gradlew $GRADLE_EXTRA_ARGS integrationTest
 
       - name: Gradle - asciidoctor
-        run: ./gradlew asciidoctor
+        run: ./gradlew $GRADLE_EXTRA_ARGS asciidoctor
 
       - name: Gradle - dokka
-        run: ./gradlew dokka
+        run: ./gradlew $GRADLE_EXTRA_ARGS dokka
 
       - name: Gradle - publish
-        run: ./gradlew publish
+        run: ./gradlew $GRADLE_EXTRA_ARGS publish
 
       - name: Upload - prepare
         if: ${{ matrix.os == 'ubuntu-latest' }}
@@ -129,6 +124,8 @@ jobs:
     needs: build
 
     runs-on: ubuntu-latest
+    env:
+      GRADLE_EXTRA_ARGS: --no-daemon
     steps:
       - name: Checkout
         uses: actions/checkout@v3
