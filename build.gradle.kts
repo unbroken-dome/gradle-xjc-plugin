@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm")
     `java-gradle-plugin`
     `maven-publish`
-    id("org.unbroken-dome.test-sets") // version "$testSetsVersion"
+    id("org.darrylmiles.repack.org.unbroken-dome.test-sets") // version "$testSetsVersion"
     id("com.gradle.plugin-publish") version "0.21.0"
 }
 
