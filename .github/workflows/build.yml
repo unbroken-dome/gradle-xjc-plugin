@@ -227,17 +227,17 @@ jobs:
           ls -lR build
 
       - name: github-pages - artifacts/ Generate Directory Listings
-        uses: jayanta525/github-pages-directory-listing@19ee734e017b656528749434335f75a1efb931bc
+        uses: jayanta525/github-pages-directory-listing@624ac8c4e56893256d3772f61a88e3b14d54314e
         with:
           FOLDER: build/gh-pages/artifacts/      #directory to generate index
 
       - name: github-pages - java8/ Generate Directory Listings
-        uses: jayanta525/github-pages-directory-listing@19ee734e017b656528749434335f75a1efb931bc
+        uses: jayanta525/github-pages-directory-listing@624ac8c4e56893256d3772f61a88e3b14d54314e
         with:
           FOLDER: build/gh-pages/java8/          #directory to generate index
 
       - name: github-pages - java11/ Generate Directory Listings
-        uses: jayanta525/github-pages-directory-listing@19ee734e017b656528749434335f75a1efb931bc
+        uses: jayanta525/github-pages-directory-listing@624ac8c4e56893256d3772f61a88e3b14d54314e
         with:
           FOLDER: build/gh-pages/java11/         #directory to generate index
 
