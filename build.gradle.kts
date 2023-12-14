@@ -103,7 +103,10 @@ dependencies {
     "testLibApi"(kotlin("stdlib-jdk8"))
     "testLibApi"("com.willowtreeapps.assertk:assertk-jvm:0.22")
 
-    "testImplementation"("org.spekframework.spek2:spek-dsl-jvm:2.0.9")
+    // Bumping these past 2.0.15 forces Gradle 7.x use for newer kotlin
+    "testImplementation"("org.spekframework.spek2:spek-dsl-jvm:2.0.15")
+    // 2.0.16 requires Java11 runtime, 2.0.17 reverted back to Java8
+    // But needs Gradle 7.x kotlin
     "testRuntimeOnly"("org.spekframework.spek2:spek-runner-junit5:2.0.15")
 
     "integrationTestImplementation"(gradleTestKit())
