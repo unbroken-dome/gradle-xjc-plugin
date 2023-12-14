@@ -5,6 +5,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.regex.Pattern
 
 class ReflectionHelper {
 
@@ -67,7 +68,10 @@ class ReflectionHelper {
             } catch(e: Throwable) {
                 // we catch this as the reflection approach is a best-effort and should not
                 //   cause a terminal failure due to an obscure JVM being different here
-                logger.warn("{}", "", e)
+                if(logger.isDebugEnabled)
+                    logger.debug("{}", "", e)
+                else if(isJre8OrEarlier())
+                    logger.warn("{}: {}", e.javaClass.name, e.message)
             }
             return null
         }
@@ -86,7 +90,10 @@ class ReflectionHelper {
             } catch(e: Throwable) {
                 // we catch this as the reflection approach is a best-effort and should not
                 //   cause a terminal failure due to an obscure JVM being different here
-                logger.warn("{}", "", e)
+                if(logger.isDebugEnabled)
+                    logger.debug("{}", "", e)
+                else if(isJre8OrEarlier())
+                    logger.warn("{}: {}", e.javaClass.name, e.message)
             }
             return null
         }
@@ -105,9 +112,21 @@ class ReflectionHelper {
             } catch(e: Throwable) {
                 // we catch this as the reflection approach is a best-effort and should not
                 //   cause a terminal failure due to an obscure JVM being different here
-                logger.warn("{}", "", e)
+                if(logger.isDebugEnabled)
+                    logger.debug("{}", "", e)
+                else if(isJre8OrEarlier())
+                    logger.warn("{}: {}", e.javaClass.name, e.message)
             }
             return false
+        }
+
+        private fun isJre8OrEarlier(): Boolean {
+            val sysPropJavaVersion = System.getProperty("java.version")
+            val pattern = Pattern.compile("^\\s*(\\d+).*")
+            val versionMajor = pattern.matcher(sysPropJavaVersion).let {
+                if(it.matches()) Integer.valueOf(it.group(1)) else 0
+            }
+            return versionMajor <= 8
         }
     }
 
