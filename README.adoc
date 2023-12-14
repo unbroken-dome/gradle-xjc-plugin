@@ -8,7 +8,7 @@ endif::[]
 :github-pages-uri: https://dlmiles.github.io/gradle-xjc-plugin
 :github-uri: https://github.com/dlmiles/gradle-xjc-plugin
 :github-m2-uri: https://maven.pkg.github.com/dlmiles/gradle-xjc-plugin
-:maven-groupId: io.github.dlmiles
+:maven-groupId: org.darrylmiles.forked.org.unbroken-dome
 :uri-build-status: https://github.com/dlmiles/gradle-xjc-plugin/actions/workflows/build.yml
 :img-build-status: https://github.com/dlmiles/gradle-xjc-plugin/actions/workflows/build.yml/badge.svg
 
