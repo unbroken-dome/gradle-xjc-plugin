@@ -101,6 +101,7 @@ dependencies {
     "xjc40CompileOnly"("jakarta.xml.bind:jakarta.xml.bind-api:4.0.0")
 
     "testLibApi"(kotlin("stdlib-jdk8"))
+    // Bumping past 0.22 forces kotlin 1.4.x (Gradle 7+)
     "testLibApi"("com.willowtreeapps.assertk:assertk-jvm:0.22")
 
     // Bumping these past 2.0.15 forces Gradle 7.x use for newer kotlin
