@@ -1,0 +1,48 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:com="http://unbroken-dome.org/gradle-xjc-plugin/samples/common"
+            xmlns:tns="http://unbroken-dome.org/gradle-xjc-plugin/samples/lookup"
+            targetNamespace="http://unbroken-dome.org/gradle-xjc-plugin/samples/lookup">
+
+    <xsd:import namespace="http://unbroken-dome.org/gradle-xjc-plugin/samples/common" schemaLocation="../schema_other/common.xsd"/>
+    <xsd:import namespace="http://unbroken-dome.org/gradle-xjc-plugin/samples/books" schemaLocation="../schema_other/books.xsd"/>
+
+    <!--
+        <searchRequest>
+            <term>first term</term>
+            <term>second term</term>
+        </searchRequest>
+    -->
+    <xsd:element name="searchRequest">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element maxOccurs="unbounded" name="term" type="xsd:string"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <!--
+        <searchResult>
+            <searchResultItem>
+                <index>1</index>
+                <details>result info</details>
+                <bookId><bookIsbn>1234567890X</bookIsbn></bookId>
+            </searchResultItem>
+        </searchResult>
+    -->
+    <xsd:complexType name="searchResultItem">
+        <xsd:sequence>
+            <xsd:element name="index" type="xsd:positiveInteger"/>
+            <xsd:element name="details" type="xsd:string"/>
+            <xsd:element name="bookId" type="com:bookId" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="searchResult">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="unbounded" name="result" type="tns:searchResultItem"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+</xsd:schema>
