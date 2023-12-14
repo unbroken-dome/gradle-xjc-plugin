@@ -2,6 +2,8 @@ name: CI-Gradle-build
 
 on:
   push:
+    branches:
+      - master
   release:
   workflow_dispatch:
     inputs:
@@ -13,6 +15,7 @@ on:
     # FIXME we probably want this to work on the latest release tag only
     # * is a special character in YAML
     # setup monthly background build
+    # Hmm GH won't run schedule if no activity for 2 months
     - cron: '45 4 18 * *'
 
 jobs:
