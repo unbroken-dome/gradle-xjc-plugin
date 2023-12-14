@@ -1,0 +1,210 @@
+name: publish
+
+on:
+  push:
+    branches:
+      - master
+  release:
+  workflow_dispatch:
+    inputs:
+      GITHUB_PACKAGES_PUBLISH:
+        description: 'Run publish Github Packages ?'
+        default: false
+        type: boolean
+      MAVEN_CENTRAL_PUBLISH:
+        description: 'Run publish Maven Central ?'
+        default: false
+        type: boolean
+      GAV_GROUP_ID:
+        description: 'GAV groupId ?'
+        default: org.darrylmiles.forked.org.unbroken-dome
+        type: string
+      GAV_VERSION:
+        description: 'GAV version ?'
+        default:
+        type: string
+      GRADLE_TARGET_integrationTest:
+        description: 'Run with integrationTest ?'
+        default: false
+        type: boolean
+
+jobs:
+  build:
+    runs-on: [ubuntu-latest]
+
+    env:
+      GRADLE_EXTRA_ARGS: --no-daemon --warning-mode=all
+      JAVA_VERSION: 8
+      GRADLE_TARGET_integrationTest: false
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Validate inputs
+      env:
+        GRADLE_TARGET_integrationTest: ${{ inputs.GRADLE_TARGET_integrationTest }}
+        GITHUB_PACKAGES_PUBLISH: ${{ inputs.GITHUB_PACKAGES_PUBLISH }}
+        MAVEN_CENTRAL_PUBLISH: ${{ inputs.MAVEN_CENTRAL_PUBLISH }}
+        GAV_GROUP_ID: ${{ inputs.GAV_GROUP_ID }}
+        GAV_VERSION: ${{ inputs.GAV_VERSION }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+      run: |
+        # apply defaults for on.schedule
+        if [ -z "${GRADLE_TARGET_integrationTest}" ] && [ -n "${{ github.event.schedule }}" ]; then
+          # force this on for schedule build
+          # "${{ github.event.schedule }}" == "45 4 18 * *"
+          # $GITHUB_EVENT_NAME == "schedule"
+          echo "GRADLE_TARGET_integrationTest=true" >> $GITHUB_ENV
+        fi
+
+        # apply defaults for on.push
+        if [ -z "$GRADLE_TARGET_integrationTest" ]
+        then
+          GRADLE_TARGET_integrationTest=true
+          echo "GRADLE_TARGET_integrationTest=$GRADLE_TARGET_integrationTest (default)"
+        fi
+        if [ -z "$GITHUB_PACKAGES_PUBLISH" ]
+        then
+          GITHUB_PACKAGES_PUBLISH=false
+          echo "GITHUB_PACKAGES_PUBLISH=$GITHUB_PACKAGES_PUBLISH (default)"
+        fi
+        if [ -z "$MAVEN_CENTRAL_PUBLISH" ]
+        then
+          MAVEN_CENTRAL_PUBLISH=false
+          echo "MAVEN_CENTRAL_PUBLISH=$MAVEN_CENTRAL_PUBLISH (default)"
+        fi
+
+        # copy to env (as currently they maybe from inputs.* and need to be propagated)
+        if [ -n "$GRADLE_TARGET_integrationTest" ]
+        then
+          echo "GRADLE_TARGET_integrationTest=$GRADLE_TARGET_integrationTest" >> $GITHUB_ENV
+        fi
+        if [ -n "$GITHUB_PACKAGES_PUBLISH" ]
+        then
+          echo "GITHUB_PACKAGES_PUBLISH=$GITHUB_PACKAGES_PUBLISH" >> $GITHUB_ENV
+        fi
+        if [ -n "$MAVEN_CENTRAL_PUBLISH" ]
+        then
+          echo "MAVEN_CENTRAL_PUBLISH=$MAVEN_CENTRAL_PUBLISH" >> $GITHUB_ENV
+        fi
+
+        echo "GITHUB_PACKAGES_PUBLISH=$GITHUB_PACKAGES_PUBLISH"
+        echo "MAVEN_CENTRAL_PUBLISH=$MAVEN_CENTRAL_PUBLISH"
+        echo "GRADLE_TARGET_integrationTest=$GRADLE_TARGET_integrationTest"
+
+        # token check
+
+        # synchronize variable names with your build.gradle
+        if [ "$GITHUB_PACKAGES_PUBLISH" = "true" ]
+        then
+          if [ -z "$GITHUB_TOKEN" ]
+          then
+            echo "$0: GITHUB_TOKEN is not set" 1>&2
+            exit 1
+          fi
+          if [ -z "$GITHUB_ACTOR" ]
+          then
+            echo "$0: GITHUB_ACTOR is not set" 1>&2
+            exit 1
+          fi
+        fi
+
+        # synchronize variable names with your build.gradle
+        if [ "$MAVEN_CENTRAL_PUBLISH" = "true" ]
+        then
+          if [ -z "$MAVEN_PASSWORD" ]
+          then
+            echo "$0: MAVEN_PASSWORD is not set" 1>&2
+            exit 1
+          fi
+          if [ -z "$MAVEN_USERNAME" ]
+          then
+            echo "$0: MAVEN_USERNAME is not set" 1>&2
+            exit 1
+          fi
+        fi
+
+        if [ -n "$GAV_GROUP_ID" ]
+        then
+          sed -e 's/^\s*group\s*=\s*/#\0/' -i gradle.properties
+          echo "group=$GAV_GROUP_ID" >> gradle.properties
+          echo "GAV_GROUP_ID=$GAV_GROUP_ID"
+        fi
+
+        if [ -n "$GAV_VERSION" ]
+        then
+          sed -e 's/^\s*version\s*=\s*/#\0/' -i gradle.properties
+          echo "version=$GAV_VERSION" >> gradle.properties
+          echo "GAV_VERSION=$GAV_VERSION"
+        fi
+
+        git diff || true
+
+    - name: Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: ${{ env.JAVA_VERSION }}
+
+    - name: Gradle - wrapper-validation-action
+      uses: gradle/wrapper-validation-action@v1
+
+    - name: Gradle - setup
+      uses: gradle/gradle-build-action@v2
+
+    - name: Gradle - assemble
+      env: # to resolve artifacts from GH packages
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        ./gradlew $GRADLE_EXTRA_ARGS assemble
+
+    - name: Gradle - check
+      run: |
+        ./gradlew $GRADLE_EXTRA_ARGS check
+
+    - name: Gradle - integrationTest
+      if: ${{ env.GRADLE_TARGET_integrationTest != 'false' }}
+      run: |
+        ./gradlew $GRADLE_EXTRA_ARGS integrationTest
+
+    - name: Gradle - asciidoctor
+      run: |
+        ./gradlew $GRADLE_EXTRA_ARGS asciidoctor
+
+    - name: Gradle - dokka
+      run: |
+        ./gradlew $GRADLE_EXTRA_ARGS dokka
+
+    - name: Gradle - publish local
+      run: |
+        ./gradlew $GRADLE_EXTRA_ARGS publish
+        find build/repo || true
+
+    - name: Gradle - publish remote github packages
+      if: ${{ env.GITHUB_PACKAGES_PUBLISH == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        ./gradlew -PdoGitHubPackagesPublish=true $GRADLE_EXTRA_ARGS publish
+
+    - name: Gradle - publish remote maven central
+      if: ${{ env.MAVEN_CENTRAL_PUBLISH == 'true' }}
+      env:
+        MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+      run: |
+        ./gradlew -PdoMavenCentralPublish=true $GRADLE_EXTRA_ARGS publish
+
+    - name: Upload - publish repo
+      uses: actions/upload-artifact@v3
+      with:
+        name: java${{ env.JAVA_VERSION }}-artifacts
+        path: build/repo/*
+        if-no-files-found: error
