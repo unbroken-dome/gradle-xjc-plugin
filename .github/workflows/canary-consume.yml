@@ -172,7 +172,7 @@ jobs:
           retention-days: 1
 
       - name: Upload - perform
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: true  # ${{ matrix.os == 'ubuntu-latest' }}
         with:
           name: java${{ env.GHA_INPUT_BUILD_JVM }}-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-build-artifacts
@@ -483,7 +483,7 @@ jobs:
           retention-days: 1
 
       - name: Upload - perform
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ matrix.os == 'ubuntu-latest' }}
         with:
           name: java${{ matrix.jvm }}-gradle${{ matrix.gradle }}-${{ env.target_version }}-consume-artifacts

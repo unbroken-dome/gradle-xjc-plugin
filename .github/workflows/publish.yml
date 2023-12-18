@@ -203,7 +203,7 @@ jobs:
         ./gradlew -PdoMavenCentralPublish=true $GRADLE_EXTRA_ARGS publish
 
     - name: Upload - publish repo
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: java${{ env.JAVA_VERSION }}-artifacts
         path: build/repo/*

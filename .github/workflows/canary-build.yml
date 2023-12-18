@@ -311,7 +311,7 @@ jobs:
           retention-days: 1
 
       - name: Upload - perform
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ matrix.os == 'ubuntu-latest' }}
         with:
           name: java${{ matrix.jvm }}-gradle${{ matrix.gradle }}-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-artifacts
