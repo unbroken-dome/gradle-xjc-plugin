@@ -266,7 +266,7 @@ jobs:
           echo "target_artifact=$target_artifact" >> $GITHUB_ENV
           echo "target_version=$target_version" >> $GITHUB_ENV
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: java${{ env.GHA_INPUT_BUILD_JVM }}-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-build-artifacts
           path: .

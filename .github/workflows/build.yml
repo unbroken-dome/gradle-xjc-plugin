@@ -152,25 +152,25 @@ jobs:
           echo "target_version=$target_version" >> $GITHUB_ENV
 
       - name: Download - java8-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: java8-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-artifacts
           path: build/java8-artifacts/
 
       - name: Download - java8-github-pages
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: java8-github-pages
           path: build/java8-github-pages-artifacts/
 
       - name: Download - java11-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: java11-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-artifacts
           path: build/java11-artifacts/
 
       - name: Download - java11-github-pages
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: java11-github-pages
           path: build/java11-github-pages-artifacts/
