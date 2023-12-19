@@ -95,10 +95,10 @@ dependencies {
     "xjc30CompileOnly"("jakarta.xml.bind:jakarta.xml.bind-api:3.0.1")
 
     "xjc40CompileOnly"(xjcCommon.output)
-    "xjc40CompileOnly"("com.sun.xml.bind:jaxb-xjc:4.0.2")
-    "xjc40CompileOnly"("com.sun.xml.bind:jaxb-core:4.0.2")
-    "xjc40CompileOnly"("com.sun.xml.bind:jaxb-impl:4.0.2")
-    "xjc40CompileOnly"("jakarta.xml.bind:jakarta.xml.bind-api:4.0.0")
+    "xjc40CompileOnly"("com.sun.xml.bind:jaxb-xjc:4.0.4")
+    "xjc40CompileOnly"("com.sun.xml.bind:jaxb-core:4.0.4")
+    "xjc40CompileOnly"("com.sun.xml.bind:jaxb-impl:4.0.4")
+    "xjc40CompileOnly"("jakarta.xml.bind:jakarta.xml.bind-api:4.0.1")
 
     "testLibApi"(kotlin("stdlib-jdk8"))
     // Bumping past 0.22 forces kotlin 1.4.x (Gradle 7+)
