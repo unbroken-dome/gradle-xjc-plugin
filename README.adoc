@@ -108,7 +108,7 @@ endif::[]
 .build.gradle(.kts)
 ----
 plugins {
-    id("{maven-groupId}.xjc") version "2.1.0-SNAPSHOT"
+    id("{maven-groupId}.xjc") version "2.2.0-SNAPSHOT"
 }
 
 dependencies {
