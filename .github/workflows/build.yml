@@ -1,0 +1,275 @@
+name: CI-Gradle-build
+
+on:
+  push:
+    branches:
+      - master
+  release:
+  workflow_dispatch:
+    inputs:
+      GRADLE_TARGET_ENABLE_integrationTest:
+        description: 'Run with integrationTest ?'
+        default: false
+        type: boolean
+  schedule:
+    # FIXME we probably want this to work on the latest release tag only
+    # * is a special character in YAML
+    # setup monthly background build
+    # Hmm GH won't run schedule if no activity for 2 months
+    - cron: '45 4 18 * *'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        jvm: ['8', '11']
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Version
+        run: |
+          if [ -z "${GRADLE_TARGET_ENABLE_integrationTest}" ] && [ -n "${{ github.event.schedule }}" ]; then
+            # force this on for schedule build
+            # "${{ github.event.schedule }}" == "45 4 18 * *"
+            # $GITHUB_EVENT_NAME == "schedule"
+            echo "GRADLE_TARGET_ENABLE_integrationTest=true" >> $GITHUB_ENV
+          fi
+          target_plugin="org.unbroken-dome.xjc"
+          target_group=$(grep "^group=" gradle.properties | cut -d'=' -f2-)
+          target_artifact="gradle-xjc-plugin"
+          target_version=$(grep "^version=" gradle.properties | cut -d'=' -f2-)
+
+          echo "target_plugin=$target_plugin" >> $GITHUB_ENV
+          echo "target_group=$target_group" >> $GITHUB_ENV
+          echo "target_artifact=$target_artifact" >> $GITHUB_ENV
+          echo "target_version=$target_version" >> $GITHUB_ENV
+
+      - name: Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.jvm }}
+
+      - name: Gradle - wrapper-validation-action
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Gradle - setup
+        uses: gradle/gradle-build-action@v2
+
+      - name: Gradle - assemble
+        env: # to resolve artifacts from GH packages
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew $GRADLE_EXTRA_ARGS assemble
+
+      - name: Gradle - check
+        run: ./gradlew $GRADLE_EXTRA_ARGS check
+
+      - name: Gradle - integrationTest
+        if: ${{ vars.GRADLE_TARGET_ENABLE_integrationTest == 'true' || inputs.GRADLE_TARGET_ENABLE_integrationTest }}
+        run: ./gradlew $GRADLE_EXTRA_ARGS integrationTest
+
+      - name: Gradle - asciidoctor
+        run: ./gradlew $GRADLE_EXTRA_ARGS asciidoctor
+
+      - name: Gradle - dokka
+        run: ./gradlew $GRADLE_EXTRA_ARGS dokka
+
+      - name: Gradle - publish
+        run: ./gradlew $GRADLE_EXTRA_ARGS publish
+
+      - name: Upload - prepare
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        shell: bash
+        run: |
+          mkdir dist;
+          for dir in $(find . -type d -path "*/build/repo");
+          do
+            cp -a "$dir" "dist/";
+          done
+          find "dist" -type f -exec ls -ld {} \;
+          du -s "dist"
+
+          mkdir -p build/gh-pages
+          cp -a build/reports/tests build/gh-pages/
+
+          docs_build_dir="build"
+          [ -d docs/build ] && docs_build_dir="docs/build" || true
+          cp -a $docs_build_dir/asciidoc/html5/* build/gh-pages/
+          cp -a $docs_build_dir/dokka build/gh-pages/
+
+          mkdir -p build/gh-pages/maven2
+          cp -a build/repo/* build/gh-pages/maven2/
+
+          ls -lad build/gh-pages
+          du -s build/gh-pages
+
+      - name: Upload - java${{ matrix.jvm }}-github-pages
+        uses: actions/upload-pages-artifact@main
+        with:
+          name: java${{ matrix.jvm }}-github-pages
+          path: build/gh-pages/
+          retention-days: 1
+
+      - name: Upload - perform
+        uses: actions/upload-artifact@v4
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        with:
+          name: java${{ matrix.jvm }}-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-artifacts
+          path: dist/repo/*
+          if-no-files-found: error
+
+
+  gh-pages-prepare:
+    needs: build
+
+    runs-on: ubuntu-latest
+    env:
+      GRADLE_EXTRA_ARGS: --no-daemon
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Version
+        run: |
+          if [ -z "${GRADLE_TARGET_ENABLE_integrationTest}" ] && [ -n "${{ github.event.schedule }}" ]; then
+            # force this on for schedule build
+            # "${{ github.event.schedule }}" == "45 4 18 * *"
+            # $GITHUB_EVENT_NAME == "schedule"
+            echo "GRADLE_TARGET_ENABLE_integrationTest=true" >> $GITHUB_ENV
+          fi
+          target_plugin="org.unbroken-dome.xjc"
+          target_group=$(grep "^group=" gradle.properties | cut -d'=' -f2-)
+          target_artifact="gradle-xjc-plugin"
+          target_version=$(grep "^version=" gradle.properties | cut -d'=' -f2-)
+
+          echo "target_plugin=$target_plugin" >> $GITHUB_ENV
+          echo "target_group=$target_group" >> $GITHUB_ENV
+          echo "target_artifact=$target_artifact" >> $GITHUB_ENV
+          echo "target_version=$target_version" >> $GITHUB_ENV
+
+      - name: Download - java8-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-artifacts
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          name: java8-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-artifacts
+          path: build/java8-artifacts/
+
+      - name: Download - java8-github-pages
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          name: java8-github-pages
+          path: build/java8-github-pages-artifacts/
+
+      - name: Download - java11-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-artifacts
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          name: java11-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-artifacts
+          path: build/java11-artifacts/
+
+      - name: Download - java11-github-pages
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          name: java11-github-pages
+          path: build/java11-github-pages-artifacts/
+
+      - name: Shell
+        run: |
+          pwd
+          ls -la
+          find . -type f
+          ls -lR build
+
+          echo "#### build/java8-github-pages-artifacts/artifact.tar:"
+          #[ ! -f "build/java8-github-pages-artifacts/artifact.tar" ] || tar -tvf "build/java8-github-pages-artifacts/artifact.tar"
+          mkdir -p build/java8-github-pages/
+          tar -xvf build/java8-github-pages-artifacts/artifact.tar -C build/java8-github-pages/
+
+          echo "#### build/java11-github-pages-artifacts/artifact.tar:"
+          #[ ! -f "build/java11-github-pages-artifacts/artifact.tar" ] || tar -tvf "build/java11-github-pages-artifacts/artifact.tar"
+          mkdir -p build/java11-github-pages/
+          tar -xvf build/java11-github-pages-artifacts/artifact.tar -C build/java11-github-pages/
+          
+          mkdir -p build/gh-pages/
+
+          # build/gh-pages/artifacts
+          mkdir -p build/gh-pages/artifacts
+          tar -cf "build/gh-pages/artifacts/java8-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-artifacts.tar.gz"  -C build/java8-artifacts/ .
+          pushd build/java8-artifacts
+          zip -q -r  "../gh-pages/artifacts/java8-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-artifacts.zip"  .
+          popd
+          tar -cf "build/gh-pages/artifacts/java11-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-artifacts.tar.gz" -C build/java11-artifacts/ .
+          pushd build/java11-artifacts
+          zip -q -r  "../gh-pages/artifacts/java11-${{ env.target_group }}-${{ env.target_artifact }}-${{ env.target_version }}-artifacts.zip" .
+          popd
+
+          # build/gh-pages/index.html (asciidoctor)
+          # build/gh-pages/dokka/
+          cp -av build/java8-github-pages/* build/gh-pages/
+
+          mkdir -p build/gh-pages/java8
+          # build/gh-pages/java8/tests/
+          cp -a build/java8-github-pages/tests build/gh-pages/java8/
+          # build/gh-pages/java8/maven2/
+          cp -a build/java8-github-pages/maven2    build/gh-pages/java8/
+          touch build/gh-pages/java8/maven2/M2_Java8_Artifacts.txt
+
+          mkdir -p build/gh-pages/java11
+          # build/gh-pages/java11/tests/
+          cp -a build/java11-github-pages/tests build/gh-pages/java11/
+          # build/gh-pages/java11/maven2/
+          cp -a build/java11-github-pages/maven2    build/gh-pages/java11/
+          touch build/gh-pages/java11/maven2/M2_Java11_Artifacts.txt
+
+          echo "#### DONE ####"
+          pwd
+          ls -la
+          find . -type f
+          ls -lR build
+
+      - name: github-pages - artifacts/ Generate Directory Listings
+        uses: jayanta525/github-pages-directory-listing@624ac8c4e56893256d3772f61a88e3b14d54314e
+        with:
+          FOLDER: build/gh-pages/artifacts/      #directory to generate index
+
+      - name: github-pages - java8/ Generate Directory Listings
+        uses: jayanta525/github-pages-directory-listing@624ac8c4e56893256d3772f61a88e3b14d54314e
+        with:
+          FOLDER: build/gh-pages/java8/          #directory to generate index
+
+      - name: github-pages - java11/ Generate Directory Listings
+        uses: jayanta525/github-pages-directory-listing@624ac8c4e56893256d3772f61a88e3b14d54314e
+        with:
+          FOLDER: build/gh-pages/java11/         #directory to generate index
+
+      - name: Upload - github-pages
+        uses: actions/upload-pages-artifact@main
+        with:
+          name: github-pages
+          path: build/gh-pages/
+          retention-days: 90
+
+
+  deploy:
+    if: ( github.ref == 'master' && github.event_name == 'push' ) || github.event_name == 'release' || github.event_name == 'schedule'
+    needs: gh-pages-prepare
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    id("org.unbroken-dome.xjc") version "2.0.0"
+    id("org.unbroken-dome.xjc") version "2.2.0-SNAPSHOT"
 }
 
 

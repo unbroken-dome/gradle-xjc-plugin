@@ -2,18 +2,17 @@ plugins {
     kotlin("jvm")
     `java-gradle-plugin`
     `maven-publish`
-    id("org.unbroken-dome.test-sets") version "3.0.1"
-    id("com.gradle.plugin-publish") version "0.12.0"
-    id("org.asciidoctor.convert") version "1.5.9.2"
-    id("org.jetbrains.dokka") version "0.10.1"
+    id("org.darrylmiles.repack.org.unbroken-dome.test-sets") // version "$testSetsVersion"
+    id("com.gradle.plugin-publish") version "0.21.0"
 }
 
 
 val kotlinVersion: String by extra
+val testSetsVersion: String by extra
 
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 
@@ -31,10 +30,13 @@ testSets {
 
 
 val xjcCommon: SourceSet by sourceSets.creating
+val xjc21: SourceSet by sourceSets.creating
 val xjc22: SourceSet by sourceSets.creating
 val xjc23: SourceSet by sourceSets.creating
+val xjc24: SourceSet by sourceSets.creating
 val xjc30: SourceSet by sourceSets.creating
-val xjcSourceSets = listOf(xjcCommon, xjc22, xjc23, xjc30)
+val xjc40: SourceSet by sourceSets.creating
+val xjcSourceSets = listOf(xjcCommon, xjc21, xjc22, xjc23, xjc24, xjc30, xjc40)
 
 
 dependencies {
@@ -46,11 +48,28 @@ dependencies {
 
     for (xjcSourceSet in xjcSourceSets) {
         (xjcSourceSet.compileOnlyConfigurationName)(sourceSets["main"].output)
-        (xjcSourceSet.compileOnlyConfigurationName)(configurations["compileOnly"])
-        (xjcSourceSet.implementationConfigurationName)(configurations["implementation"])
+
+        // Gradle 8.x does not allow referencing configurations[] like this anymore
+        // but it seems a convenience to unroll the deplist
+
+        // for compileOnly()
+        //(xjcSourceSet.compileOnlyConfigurationName)(configurations["compileOnly"].allDependencies)
+        (xjcSourceSet.compileOnlyConfigurationName)(kotlin("stdlib-jdk8"))
+        (xjcSourceSet.compileOnlyConfigurationName)(gradleApi())
+
+        // for implementation()
+        //(xjcSourceSet.implementationConfigurationName)(configurations["implementation"].allDependencies)
+        (xjcSourceSet.implementationConfigurationName)("javax.activation:javax.activation-api:1.2.0")
+        (xjcSourceSet.implementationConfigurationName)("xml-resolver:xml-resolver:1.2")
     }
 
     "xjcCommonCompileOnly"("com.sun.xml.bind:jaxb-xjc:2.3.3")
+
+    "xjc21CompileOnly"(xjcCommon.output)
+    "xjc21CompileOnly"("com.sun.xml.bind:jaxb-xjc:2.1.17")
+    "xjc21CompileOnly"("com.sun.xml.bind:jaxb-core:2.1.14")
+    "xjc21CompileOnly"("com.sun.xml.bind:jaxb-impl:2.1.17")
+    "xjc21CompileOnly"("javax.xml.bind:jaxb-api:2.1")
 
     "xjc22CompileOnly"(xjcCommon.output)
     "xjc22CompileOnly"("com.sun.xml.bind:jaxb-xjc:2.2.11")
@@ -59,23 +78,42 @@ dependencies {
     "xjc22CompileOnly"("javax.xml.bind:jaxb-api:2.2.11")
 
     "xjc23CompileOnly"(xjcCommon.output)
-    "xjc23CompileOnly"("com.sun.xml.bind:jaxb-xjc:2.3.3")
+    "xjc23CompileOnly"("com.sun.xml.bind:jaxb-xjc:2.3.9")
+    "xjc23CompileOnly"("com.sun.xml.bind:jaxb-core:2.3.0.1")
+    "xjc23CompileOnly"("com.sun.xml.bind:jaxb-impl:2.3.9")
+    "xjc23CompileOnly"("javax.xml.bind:jaxb-api:2.3.1")
+
+    "xjc24CompileOnly"(xjcCommon.output)
+    "xjc24CompileOnly"("com.sun.xml.bind:jaxb-xjc:2.4.0-b180830.0438")
+    "xjc24CompileOnly"("com.sun.xml.bind:jaxb-impl:2.4.0-b180830.0438")
+    "xjc24CompileOnly"("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
 
     "xjc30CompileOnly"(xjcCommon.output)
-    "xjc30CompileOnly"("com.sun.xml.bind:jaxb-xjc:3.0.0-M4")
-    "xjc30CompileOnly"("com.sun.xml.bind:jaxb-xjc:2.3.3")
-    "xjc30CompileOnly"("jakarta.xml.bind:jakarta.xml.bind-api:3.0.0-RC3")
+    "xjc30CompileOnly"("com.sun.xml.bind:jaxb-xjc:3.0.2")
+    "xjc30CompileOnly"("com.sun.xml.bind:jaxb-core:3.0.2")
+    "xjc30CompileOnly"("com.sun.xml.bind:jaxb-impl:3.0.2")
+    "xjc30CompileOnly"("jakarta.xml.bind:jakarta.xml.bind-api:3.0.1")
+
+    "xjc40CompileOnly"(xjcCommon.output)
+    "xjc40CompileOnly"("com.sun.xml.bind:jaxb-xjc:4.0.4")
+    "xjc40CompileOnly"("com.sun.xml.bind:jaxb-core:4.0.4")
+    "xjc40CompileOnly"("com.sun.xml.bind:jaxb-impl:4.0.4")
+    "xjc40CompileOnly"("jakarta.xml.bind:jakarta.xml.bind-api:4.0.1")
 
     "testLibApi"(kotlin("stdlib-jdk8"))
+    // Bumping past 0.22 forces kotlin 1.4.x (Gradle 7+)
     "testLibApi"("com.willowtreeapps.assertk:assertk-jvm:0.22")
 
-    "testImplementation"("org.spekframework.spek2:spek-dsl-jvm:2.0.9")
-    "testRuntimeOnly"("org.spekframework.spek2:spek-runner-junit5:2.0.9")
+    // Bumping these past 2.0.15 forces Gradle 7.x use for newer kotlin
+    "testImplementation"("org.spekframework.spek2:spek-dsl-jvm:2.0.15")
+    // 2.0.16 requires Java11 runtime, 2.0.17 reverted back to Java8
+    // But needs Gradle 7.x kotlin
+    "testRuntimeOnly"("org.spekframework.spek2:spek-runner-junit5:2.0.15")
 
     "integrationTestImplementation"(gradleTestKit())
     "integrationTestImplementation"("org.junit.jupiter:junit-jupiter-api:5.7.0")
     "integrationTestImplementation"("org.junit.platform:junit-platform-commons:1.7.0")
-    "integrationTestImplementation"("org.ow2.asm:asm:9.0")
+    "integrationTestImplementation"("org.ow2.asm:asm:9.5")
     "integrationTestRuntimeOnly"("org.junit.jupiter:junit-jupiter-engine:5.7.0")
 }
 
@@ -91,7 +129,17 @@ configurations.all {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
-    kotlinOptions.freeCompilerArgs = listOf("-Xjvm-default=enable")
+    if(kotlinVersion >= "1.6.20") {
+        kotlinOptions.freeCompilerArgs = listOf("-Xjvm-default=all-compatibility")
+    } else {
+        kotlinOptions.freeCompilerArgs = listOf("-Xjvm-default=enable") // 1.3 thru 1.6.0 (not 1.6.20)
+    }
+}
+
+// There is no *.java code in this project but newer Gradle complains if there
+// is a mismatch with kotlin due to the runtime JDK being newer than kotlin target.
+tasks.withType<JavaCompile> {
+    targetCompatibility = "1.8"
 }
 
 
@@ -118,6 +166,11 @@ tasks.withType<Test> {
     doFirst {
         project.mkdir(tmpDir)
     }
+
+    // ensure custom system properties are exposed to testing from CI
+    System.getProperties().filter { it.key.toString().startsWith("org.unbrokendome.gradle.plugins.xjc") }
+        .forEach { (t, u) -> systemProperty(t.toString(), u ?: "") }
+
 }
 
 
@@ -174,9 +227,18 @@ gradlePlugin {
 }
 
 
+fun resolveSystemGetenv(name: String, defaultValue: String? = null): String? {
+    if(System.getenv().containsKey(name))
+        return System.getenv(name)
+    return defaultValue
+}
+
+val githubRepositoryOwner = resolveSystemGetenv("GITHUB_REPOSITORY_OWNER", "unbroken-dome")
+
+
 pluginBundle {
-    website = "https://github.com/unbroken-dome/gradle-xjc-plugin"
-    vcsUrl = "https://github.com/unbroken-dome/gradle-xjc-plugin"
+    website = "https://github.com/${githubRepositoryOwner}/gradle-xjc-plugin"
+    vcsUrl = "https://github.com/${githubRepositoryOwner}/gradle-xjc-plugin"
     description = "A plugin that integrates the XJC binding compiler into a Gradle build."
     tags = listOf("xjc", "jaxb", "code generation", "xml")
 
@@ -188,44 +250,6 @@ pluginBundle {
 }
 
 
-tasks.named("dokka", org.jetbrains.dokka.gradle.DokkaTask::class) {
-    outputFormat = "html"
-    configuration {
-        externalDocumentationLink {
-            url = uri("https://docs.gradle.org/current/javadoc/").toURL()
-        }
-        reportUndocumented = false
-        sourceLink {
-            path = "src/main/kotlin"
-            url = "https://github.com/unbroken-dome/gradle-xjc-plugin/blob/v${project.version}/src/main/kotlin"
-            lineSuffix = "#L"
-        }
-        perPackageOption {
-            prefix = "org.unbrokendome.gradle.plugins.xjc.internal"
-            suppress = true
-        }
-    }
-}
-
-
-asciidoctorj {
-    version = "2.4.1"
-}
-
-dependencies {
-    "asciidoctor"("com.bmuschko:asciidoctorj-tabbed-code-extension:0.3")
-}
-
-
-tasks.named("asciidoctor", org.asciidoctor.gradle.AsciidoctorTask::class) {
-    sourceDir("docs")
-    sources(delegateClosureOf<PatternSet> { include("index.adoc") })
-
-    options(mapOf(
-        "doctype" to "book"
-    ))
-    attributes(mapOf(
-        "project-version" to project.version,
-        "source-highlighter" to "prettify"
-    ))
+apply {
+    from("${rootDir}/publish.gradle.kts")
 }

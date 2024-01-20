@@ -6,7 +6,6 @@ import assertk.assertions.contains
 import assertk.assertions.containsAll
 import assertk.assertions.extracting
 import assertk.assertions.isFile
-import jdk.nashorn.internal.runtime.regexp.joni.constants.AsmConstants
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.platform.commons.annotation.Testable
 import org.objectweb.asm.ClassReader

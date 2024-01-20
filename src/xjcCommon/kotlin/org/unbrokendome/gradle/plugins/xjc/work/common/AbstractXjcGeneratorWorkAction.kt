@@ -14,9 +14,12 @@ import org.unbrokendome.gradle.plugins.xjc.internal.XjcGeneratorWorkParameters
 import org.unbrokendome.gradle.plugins.xjc.resolver.ClasspathUriResolver
 import org.unbrokendome.gradle.plugins.xjc.resolver.ExtensibleCatalogResolver
 import org.unbrokendome.gradle.plugins.xjc.resolver.MavenUriResolver
+import org.unbrokendome.gradle.plugins.xjc.resolver.ReflectionHelper
 import org.xml.sax.InputSource
+import java.lang.reflect.InvocationTargetException
 import java.net.URI
 import java.net.URISyntaxException
+import java.util.Locale
 
 
 abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParameters> {
@@ -24,59 +27,167 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
     private val logger = Logging.getLogger(javaClass)
 
 
+    protected open fun getContextClassLoaderHolder(): IContextClassLoaderHolder = ContextClassLoaderHolder()
+
+    protected open fun getOptionsAccessor(options: Options): IOptionsAccessor = OptionsAccessor(options)
+
     override fun execute() {
 
         parameters.targetDir.get().asFile.mkdirs()
 
-        val options = buildOptions()
+        val options = setupBuildOptions()
 
-        val docLocale = parameters.docLocale.orNull
-        if (docLocale != null) {
-            withDefaultLocale(docLocale) {
+        val contextClassLoaderHolder = getContextClassLoaderHolder()
+
+        try {
+            contextClassLoaderHolder.setup(options)
+
+            buildOptions(options)
+
+            val docLocale = parameters.docLocale.orNull
+            if (docLocale != null) {
+                withDefaultLocale(Locale.forLanguageTag(docLocale)) {
+                    doExecute(options)
+                }
+            } else {
                 doExecute(options)
             }
-        } else {
-            doExecute(options)
+        } finally {
+            contextClassLoaderHolder.restore()
         }
     }
 
+    protected open fun checkApiInClassPath() {
+	val javax_legacy_className = "javax.xml.bind.JAXBPermission"
+        val javax_className = "javax.xml.bind.JAXBContextFactory"
+        val jakarta_className = "jakarta.xml.bind.JAXBContextFactory"
+        var kind: String? = "unknown"
+
+        val list = mutableListOf<String>()
+        try {
+            // It is normal to find this legacy class also in the newer bind-api.jar
+            Class.forName(javax_legacy_className)
+            list.add(javax_legacy_className)
+            kind = "legacy"
+        } catch (_: ClassNotFoundException) {
+        }
+        try {
+            Class.forName(javax_className)
+            list.add(javax_className)
+            kind = "javax"
+        } catch (_: ClassNotFoundException) {
+        }
+        try {
+            Class.forName(jakarta_className)
+            list.add(jakarta_className)
+            kind = "jakarta"
+        } catch (_: ClassNotFoundException) {
+        }
+
+        if(list.isEmpty())
+            logger.warn("Unable to locate expected class {} or {} or {} on XJC visible ClassPath, maybe you have used one or more xjcTool terms and need to also include *.bind-api in an additional xjcTool option.",
+                jakarta_className, javax_className, javax_legacy_className)
+
+        if(list.size > 1 && list.contains(jakarta_className))
+            logger.warn("Found multiple bind-api.jar on XJC visible ClassPath, usually you only need one of these. [{}]",
+                list.joinToString())
+        else
+            logger.info("Found bind-api.jar on XJC visible ClassPath, detected kind: {} [{}]",
+                kind, list.joinToString())
+    }
 
     protected open fun doExecute(options: Options) {
 
         val listener = LoggingXjcListener()
         val errorReceiver = ErrorReceiverFilter(listener)
 
-        val model = ModelLoader.load(options, JCodeModel(), errorReceiver)
-            ?: throw Exception("Parse failed")
+        checkApiInClassPath()
 
-        val outline = model.generateCode(options, errorReceiver)
-            ?: throw Exception("Code generation failed")
+        try {
+            val jCodeModel = JCodeModel()
 
-        listener.compiled(outline)
+            addClassNameReplacer(options.target, jCodeModel)
 
-        val codeWriter = options.createCodeWriter()
-            .let { cw ->
-                if (!options.quiet) {
-                    ProgressCodeWriter(cw, listener, model.codeModel.countArtifacts())
-                } else cw
-            }
+            val model = ModelLoader.load(options, jCodeModel, errorReceiver)
+                ?: throw Exception("Parse failed")
 
-        model.codeModel.build(codeWriter)
+            val outline = model.generateCode(options, errorReceiver)
+                ?: throw Exception("Code generation failed")
+
+            listener.compiled(outline)
+
+            val codeWriter = options.createCodeWriter()
+                .let { cw ->
+                    if (!options.quiet) {
+                        ProgressCodeWriter(cw, listener, model.codeModel.countArtifacts())
+                    } else cw
+                }
+
+            model.codeModel.build(codeWriter)
+        } finally {
+            ReflectionHelper.closeAll()
+        }
     }
 
+    private fun reflectiveInvoke_JCodeModel_addClassNameReplacer(o: Any, c1: String?, c2: String?): Boolean {
+        try {
+            // JCodeModel#addClassNameReplacer(String,String)
+            val m = o.javaClass.getMethod("addClassNameReplacer", String::class.java, String::class.java)
+            m.invoke(o, c1, c2)
+            return true
+        } catch (_: NoSuchMethodException) {
+        } catch (_: IllegalAccessException) {
+        } catch (_: IllegalArgumentException) {
+        } catch (_: InvocationTargetException) {
+        } catch (_: SecurityException) {
+        } catch (_: Throwable) {
+        }
+        return false
+    }
 
-    protected open fun buildOptions() = Options().apply {
+    private fun addClassNameReplacer(target: SpecVersion, jCodeModel: JCodeModel) {
+        // runtime lookup of V3_0 instance
+        val specVersion30 = SpecVersion.parse("3.0")
 
+        if(specVersion30 == null)
+            return  // no support for v3.0 in XJC implementation
+
+        if(target.ordinal >= specVersion30.ordinal)
+            return  // targeting 3.0 or newer, nothing to do here
+
+        // if target version is < 3.0
+
+        // if implementation is: com.sun.xml.bind.jaxb-xjc  or has class ?
+        //   we don't really check this, this allows the feature to work on 3rd party XJC
+        //   implementations where the addClassNameReplacer(String,String) method is available
+        // if implementation version is >= 3.0 or simply has the method ?
+        //   the method was only introduced since 3.0 so it doesn't matter if we can't
+        //   find it on older versions.
+        // if a new version of XJC 2.x were to came along with the method available in the
+        //   future adding these replacement still doesn't break anything while targeting < 3.0
+        val JAKARTA = "jakarta.xml.bind"            // Regex.escape() breaks it
+        val JAVAX = "javax.xml.bind"
+        val JAXB_CORE = "org.glassfish.jaxb.core"   // Regex.escape() breaks it
+        val BIND = "com.sun.xml.bind"
+
+        // The JCodeModel#addClassNameReplacer(String c1,String c2) method is documented
+        //  as taking a string Regex in c1.  You would expect to quote-meta on the
+        //  full-stop characters as the correct c1 value.  But it also uses the c1
+        //  value in a String#startsWith(c1) check before doing a String#replaceAll(c1, c2).
+
+        reflectiveInvoke_JCodeModel_addClassNameReplacer(jCodeModel, JAKARTA, JAVAX)
+        reflectiveInvoke_JCodeModel_addClassNameReplacer(jCodeModel, JAXB_CORE, BIND)
+    }
+
+    protected open fun setupBuildOptions() = Options().apply {
         parameters.pluginClasspath.forEach { classpathEntry ->
             classpaths.add(classpathEntry.toURI().toURL())
         }
+    }
 
-        // Set up the classloader containing the plugin classpath. This should happen before any call
-        // to parseArgument() or parseArguments() because it might trigger the resolution of plugins
-        // (which are then cached)
-        val contextClassLoader = Thread.currentThread().contextClassLoader
-        val userClassLoader = getUserClassLoader(contextClassLoader)
-        Thread.currentThread().contextClassLoader = userClassLoader
+    protected open fun buildOptions(options: Options) = options.apply {
+        val optionsAccessor = getOptionsAccessor(options)
+
 
         target = parameters.target
             .map { SpecVersion.parse(it) }
@@ -140,7 +251,7 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
         }
 
         parameters.encoding.orNull?.let {
-            encoding = it
+            optionsAccessor.setEncoding(it)   // encoding = it
         }
 
         parameters.episodeTargetFile.orNull?.asFile?.let { episodeTargetFile ->
@@ -150,7 +261,7 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
 
         if (logger.isInfoEnabled) {
             logger.info(
-                "XJC options:\n{}", dumpOptions().prependIndent("  ")
+                "XJC options:\n{}", dumpOptions(optionsAccessor).prependIndent("  ")
             )
             logger.info("XJC extra args: {}", parameters.extraArgs.get())
 
@@ -166,7 +277,7 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
     }
 
 
-    private fun Options.dumpOptions() = buildString {
+    private fun Options.dumpOptions(optionsAccessor: IOptionsAccessor) = buildString {
         append("targetVersion: ").appendln(target)
 
         appendln("grammars:")
@@ -193,7 +304,8 @@ abstract class AbstractXjcGeneratorWorkAction : WorkAction<XjcGeneratorWorkParam
         append("compatibilityMode: ").appendln(if (isExtensionMode) "EXTENSION" else "STRICT")
         append("defaultPackage: ").appendln(defaultPackage)
         append("defaultPackage2: ").appendln(defaultPackage2)
-        append("encoding: ").appendln(encoding)
+        if(optionsAccessor.hasEncoding())
+            append("encoding: ").appendln(optionsAccessor.getEncoding())
         appendln("plugins:")
         for (plugin in allPlugins) {
             append("  - ").append(plugin.javaClass.name)

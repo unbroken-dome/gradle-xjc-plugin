@@ -45,18 +45,38 @@ class MavenUriResolver(
         val path = dependency.path
 
         return if (path != null) {
+            if(logger.isDebugEnabled) {     // This is useful visibility for users
+                matchingArtifacts.forEach {
+                    logger.debug("MavenUriResolver matchingArtifacts={} for {}", it, dependency)
+                }
+            }
             val classLoader = URLClassLoader(
                 matchingArtifacts.map { it.file.toURI().toURL() }.toList().toTypedArray()
             )
             val resourceName = path.removePrefix("/")
-            classLoader.getResource(resourceName)?.toURI()
-                ?: throw IllegalArgumentException(
-                    "Could not resolve resource \"$resourceName\" from classpath: ${classLoader.urLs.toList()}"
-                )
+            classLoader.use {
+
+                val resList = classLoader.getResources(resourceName).toList()
+                if(resList.size > 1) {
+                    for((index,arti) in artifacts.withIndex()) {
+                        logger.warn("MavenUriResolver multiple matching resources found[{}]: {}", index, arti)
+                    }
+                }
+
+                classLoader.getResource(resourceName)?.toURI()
+                    ?: throw IllegalArgumentException(
+                        "Could not resolve resource \"$resourceName\" from classpath: ${classLoader.urLs.toList()}"
+                    )
+            }
 
         } else {
-            matchingArtifacts.first()
-                .file.toURI()
+            val artifacts = matchingArtifacts.toList()
+            if(artifacts.size > 1) {
+                for((index,it) in artifacts.withIndex()) {
+                    logger.warn("MavenUriResolver multiple matching artifacts found, only index 0 is selected[{}]: {}", index, it)
+                }
+            }
+            artifacts[0].file.toURI()
         }
     }
 }

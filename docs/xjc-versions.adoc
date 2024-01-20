@@ -4,7 +4,7 @@ XJC has been around for a long time and comes in a variety of versions, includin
 Oracle and non-standard forks from third parties. They should usually correspond with the version of the JAXB
 API / runtime used, but it is also possible to use a newer XJC to generate code for use with an earlier JAXB target.
 
-The `org.unbroken-dome.xjc` plugin supports the standard XJC versions 2.2, 2.3 and 3.0. Other versions may work
+The `org.unbroken-dome.xjc` plugin supports the standard XJC versions 2.1, 2.2, 2.3, 2.4, 3.0 and 4.0. Other versions may work
 as well but are not tested. The plugin will use XJC 2.3 by default if the version is not specified.
 
 NOTE: XJC 3.0 is currently in milestone status but since the interface to XJC has not
@@ -46,17 +46,43 @@ invoking XJC, with the following dependencies:
 |===
 | XJC Version | Classpath artifacts
 
+| 2.1
+| `com.sun.xml.bind:jaxb-xjc:2.1.17`
+  `com.sun.xml.bind:jaxb-core:2.1.14`
+  `com.sun.xml.bind:jaxb-impl:2.1.17`
+  `javax.xml.bind:jaxb-api:2.1`
+
+
 | 2.2
 | `com.sun.xml.bind:jaxb-xjc:2.2.11`
   `com.sun.xml.bind:jaxb-core:2.2.11`
   `com.sun.xml.bind:jaxb-impl:2.2.11`
-  `javax.xml.bind:jaxb-api:2.2.11`
+  `javax.xml.bind:jaxb-api:2.2.12`
 
 | 2.3
-| `com.sun.xml.bind:jaxb-xjc:2.3.3`
+| `com.sun.xml.bind:jaxb-xjc:2.3.8`
+  `com.sun.xml.bind:jaxb-core:2.3.0.1`
+  `com.sun.xml.bind:jaxb-impl:2.3.8`
+  `javax.xml.bind:jaxb-api:2.3.1`
+
+| 2.4
+| `com.sun.xml.bind:jaxb-xjc:2.4.0-b180830.0438`
+  `com.sun.xml.bind:jaxb-core:2.3.0.1`
+  `com.sun.xml.bind:jaxb-impl:2.4.0-b180830.0438`
+  `javax.xml.bind:jaxb-api:2.4.0-b180830.0359`
 
 | 3.0
-| `com.sun.xml.bind:jaxb-xjc:3.0.0-M4`
+| `com.sun.xml.bind:jaxb-xjc:3.0.2`
+  `com.sun.xml.bind:jaxb-core:3.0.2`
+  `com.sun.xml.bind:jaxb-impl:3.0.2`
+  `jakarta.xml.bind:jakarta.xml.bind-api:3.0.1`
+
+| 4.0
+| `com.sun.xml.bind:jaxb-xjc:4.0.2`
+  `com.sun.xml.bind:jaxb-core:4.0.2`
+  `com.sun.xml.bind:jaxb-impl:4.0.2`
+  `jakarta.xml.bind:jakarta.xml.bind-api:4.0.0`
+
 |===
 
 
@@ -66,13 +92,20 @@ You can also manually configure the classpath for invoking XJC by adding depende
 to the `xjcTool` configuration. As soon as this configuration contains any dependencies,
 the defaults will back away, and the `xjc.xjcVersion` property will have no effect.
 
+You should specify at least `jaxb-xjc` it is possible its dependencies are included
+transitively or you can include them with additional `xjcTool` directives.
+
 For example:
 
 [source,groovy,role="primary"]
 .Groovy
 ----
 dependencies {
-    xjcTool 'com.sun.xml.bind:jaxb-xjc:3.0.0-M4'
+    xjcTool 'com.sun.xml.bind:jaxb-xjc:3.0.2'
+    // Optional explicit version set:
+    xjcTool 'com.sun.xml.bind:jaxb-core:3.0.2'
+    xjcTool 'com.sun.xml.bind:jaxb-impl:3.0.2'
+    xjcTool 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
 }
 ----
 
@@ -80,6 +113,10 @@ dependencies {
 .Kotlin
 ----
 dependencies {
-    "xjcTool"("com.sun.xml.bind:jaxb-xjc:3.0.0-M4")
+    "xjcTool"("com.sun.xml.bind:jaxb-xjc:3.0.2")
+    // Optional explicit version set:
+    "xjcTool"("com.sun.xml.bind:jaxb-core:3.0.2")
+    "xjcTool"("com.sun.xml.bind:jaxb-impl:3.0.2")
+    "xjcTool"("jakarta.xml.bind:jakarta.xml.bind-api:3.0.1")
 }
 ----

@@ -40,13 +40,13 @@ object XjcSourceSetConventionTest : Spek({
 
         it("should return the correct task and configuration names") {
             assertThat(xjcSourceSetConvention).all {
-                prop(XjcSourceSetConvention::xjcGenerateTaskName)
+                this.prop(XjcSourceSetConvention::xjcGenerateTaskName)
                     .isEqualTo("xjcGenerate")
-                prop(XjcSourceSetConvention::xjcClasspathConfigurationName)
+                this.prop(XjcSourceSetConvention::xjcClasspathConfigurationName)
                     .isEqualTo("xjcClasspath")
-                prop(XjcSourceSetConvention::xjcEpisodesConfigurationName)
+                this.prop(XjcSourceSetConvention::xjcEpisodesConfigurationName)
                     .isEqualTo("xjcEpisodes")
-                prop(XjcSourceSetConvention::xjcCatalogResolutionConfigurationName)
+                this.prop(XjcSourceSetConvention::xjcCatalogResolutionConfigurationName)
                     .isEqualTo("xjcCatalogResolution")
             }
         }
@@ -66,13 +66,13 @@ object XjcSourceSetConventionTest : Spek({
 
         it("should return the correct task and configuration names") {
             assertThat(xjcSourceSetConvention).all {
-                prop(XjcSourceSetConvention::xjcGenerateTaskName)
+                this.prop(XjcSourceSetConvention::xjcGenerateTaskName)
                     .isEqualTo("xjcGenerateCustom")
-                prop(XjcSourceSetConvention::xjcClasspathConfigurationName)
+                this.prop(XjcSourceSetConvention::xjcClasspathConfigurationName)
                     .isEqualTo("customXjcClasspath")
-                prop(XjcSourceSetConvention::xjcEpisodesConfigurationName)
+                this.prop(XjcSourceSetConvention::xjcEpisodesConfigurationName)
                     .isEqualTo("customXjcEpisodes")
-                prop(XjcSourceSetConvention::xjcCatalogResolutionConfigurationName)
+                this.prop(XjcSourceSetConvention::xjcCatalogResolutionConfigurationName)
                     .isEqualTo("customXjcCatalogResolution")
             }
         }
@@ -80,13 +80,13 @@ object XjcSourceSetConventionTest : Spek({
 
         it("should set default include filters") {
             assertThat(xjcSourceSetConvention).all {
-                prop("xjcSchema") { it.xjcSchema }
+                this.prop("xjcSchema") { it.xjcSchema }
                     .prop("includes") { it.includes }
                     .containsOnly("**/*.xsd")
-                prop("xjcBinding") { it.xjcBinding }
+                this.prop("xjcBinding") { it.xjcBinding }
                     .prop("includes") { it.includes }
                     .containsOnly("**/*.xjb")
-                prop("xjcUrl") { it.xjcUrl }
+                this.prop("xjcUrl") { it.xjcUrl }
                     .prop("includes") { it.includes }
                     .containsOnly("**/*.url")
             }
@@ -98,13 +98,13 @@ object XjcSourceSetConventionTest : Spek({
             xjc.srcDirName.set("xjc")
 
             assertThat(xjcSourceSetConvention).all {
-                prop("xjcSchema") { it.xjcSchema }
+                this.prop("xjcSchema") { it.xjcSchema }
                     .prop("srcDirs") { it.srcDirs }
                     .containsOnly(project.file("src/custom/xjc"))
-                prop("xjcBinding") { it.xjcBinding }
+                this.prop("xjcBinding") { it.xjcBinding }
                     .prop("srcDirs") { it.srcDirs }
                     .containsOnly(project.file("src/custom/xjc"))
-                prop("xjcUrl") { it.xjcUrl }
+                this.prop("xjcUrl") { it.xjcUrl }
                     .prop("srcDirs") { it.srcDirs }
                     .containsOnly(project.file("src/custom/xjc"))
             }

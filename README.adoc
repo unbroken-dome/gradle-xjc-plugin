@@ -5,6 +5,22 @@ ifdef::env-github[]
 :caution-caption: :fire:
 :warning-caption: :warning:
 endif::[]
+:github-pages-uri: https://dlmiles.github.io/gradle-xjc-plugin
+:github-uri: https://github.com/dlmiles/gradle-xjc-plugin
+:github-m2-uri: https://maven.pkg.github.com/dlmiles/gradle-xjc-plugin
+:maven-groupId: org.darrylmiles.forked.org.unbroken-dome
+:uri-build-status: https://github.com/dlmiles/gradle-xjc-plugin/actions/workflows/build.yml
+:img-build-status: https://github.com/dlmiles/gradle-xjc-plugin/actions/workflows/build.yml/badge.svg
+
+ifdef::env-github[]
+image:{img-build-status}[CI-Gradle-build,link={uri-build-status}]
+
+#CI Targets: `Java 8` and `Java 11` for plugin project builder#
+
+#Plugin artifact supports `Java 8`, `Java 11`, `Java 17` and `Java 21`#
+
+#For use with `Gradle 5.6` through `Gradle 8.5`#
+endif::[]
 
 = Gradle XJC Plugin
 
@@ -13,28 +29,86 @@ Invokes the `xjc` binding compiler from a Gradle build.
 
 == Features
 
-- Automatically enable XJC code generation for each source set in your project
-- support different versions of XJC through classpath isolation
-- producing and consuming episodes
-- catalogs with `maven:` and `classpath:` URI resolution (similar to maven-jaxb2-plugin)
-
+- Supports XJC Tool `com.sun.xml.bind` versions 2.1 (legacy), 2.2, 2.3, 2.4, 3.0 (jakarta) and
+  4.0 (jakarta) which is the reference implementation now hosted by Eclipse&reg; foundation
+  under the EE4J project.
+- Supports JAXB&trade; specification -target versions 2.0, 2.1, 2.2, 2.3, 3.0 (jakarta).
+- Automatically enable XJC code generation for each source set in your project.
+  Project structural use of multiple src/<name>/schema/ folders to organise bindings and
+  schemas.
+- Support XJC through classpath isolation to better control visibility of data presented to the
+  tool separate from the Gradle build itself.
+- Producing and consuming episodes.
+- Dependency based catalog sources with `maven:` and `classpath:` URI resolution (similar to
+  maven-jaxb2-plugin) as well as the standard file,jar,jar:file,http,https sources.
+- XJC tool plugin extension support, including custom plugins you may provide an implementation
+  for.
 
 == Requirements
 
-- Gradle 5.6 or higher
+The Gradle plugin itself:
+
+- Gradle 5.6 or higher including
+* 5.6 or later using JDK8 or JDK11
+* 7.3 or later using JDK8, JDK11 or JDK17
+* 8.5 or later using JDK8, JDK11, JDK17 or JDK21
 - JDK 1.8 or higher (when running Gradle)
+- See also Gradle build tool Java compatibility matrix at https://docs.gradle.org/current/userguide/compatibility.html for which this plugin is consistent with
+
+The XJC Tool requirements:
+
+- If using XJC Tool 4.x or later, the XJC Tool requires JDK 11 or higher while this
+  plugin only requires 1.8 or higher, earlier versions of XJC Tool are
+  compatible with JDK 1.8
+- Some specific XJC Tool versions may have been published with incorrect byte code
+  compatibility, resulting in those versions not running on the Java SE version they
+  intended to target
+- See section link:{github-pages-uri}#_xjc_tool_runtime_java_compatibility[XJC Tool Runtime Java Compatibility]
 
 
 == Quick Start
 
-Apply the `org.unbroken-dome.xjc` plugin to your Gradle build script and add an appropriate
+Apply the `{maven-groupId}.xjc` plugin to your Gradle build script and add an appropriate
 dependency on the JAXB API:
 
-[source,kotlin]
+ifdef::env-github[]
+[source,kotlin,subs="attributes+"]
+.settings.gradle(.kts)
+----
+pluginManagement {
+    repositories {
+        maven {
+            //url = uri("{github-pages-uri}/java8/maven2")
+            url = uri("{github-m2-uri}")
+            content {
+                // this repository *only* contains artifacts for specific groups
+                includeGroup("org.unbroken-dome.xjc")
+                includeGroup("org.unbroken-dome")
+ifdef::env-github[]
+
+                includeGroup("{maven-groupId}.xjc")
+                includeGroup("{maven-groupId}")
+endif::[]
+            }
+            credentials {
+                // github requires any valid credentials even to GET packages
+                username = System.getenv("GITHUB_USERNAME")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+
+    // Official releases only
+    gradlePluginPortal()   
+}
+----
+
+endif::[]
+[source,kotlin,subs="normal"]
 .build.gradle(.kts)
 ----
 plugins {
-    id("org.unbroken-dome.xjc") version "2.0.0"
+    id("{maven-groupId}.xjc") version "2.2.0-SNAPSHOT"
 }
 
 dependencies {
@@ -51,5 +125,11 @@ it the `main` Java compilation.
 
 == Further Documentation
 
-* https://unbroken-dome.github.io/projects/gradle-xjc-plugin/[User Manual]
-* https://unbroken-dome.github.io/projects/gradle-xjc-plugin/dokka/gradle-xjc-plugin/[API/DSL Documentation]
+* {github-pages-uri}/[User Manual]
+* {github-pages-uri}/dokka/gradle-xjc-plugin/[API/DSL Documentation]
+* {github-m2-uri}/[Github Maven2 Package Browse]
+* {github-pages-uri}/java8/maven2/[Github-Pages Maven2 Artifact Browse]
+* {github-pages-uri}/artifacts/[Maven2 Artifact Archive Download]
+
+* {github-pages-uri}/java8/tests/[Java 8 Test Reports]
+* {github-pages-uri}/java11/tests/[Java 11 Test Reports]

@@ -7,7 +7,6 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
 import org.gradle.workers.WorkParameters
-import java.util.Locale
 
 
 interface XjcGeneratorWorkParameters : WorkParameters {
@@ -23,7 +22,7 @@ interface XjcGeneratorWorkParameters : WorkParameters {
     val episodes: ConfigurableFileCollection
     val targetPackage: Property<String>
     val encoding: Property<String>
-    val docLocale: Property<Locale>
+    val docLocale: Property<String>
     val episodeTargetFile: RegularFileProperty
     val extraArgs: ListProperty<String>
     val flags: SetProperty<XjcGeneratorFlags>

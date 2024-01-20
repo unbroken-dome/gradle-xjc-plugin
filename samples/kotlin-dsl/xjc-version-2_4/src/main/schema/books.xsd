@@ -1,0 +1,21 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:tns="http://unbroken-dome.org/gradle-xjc-plugin/samples/books"
+            targetNamespace="http://unbroken-dome.org/gradle-xjc-plugin/samples/books">
+
+    <xsd:complexType name="bookType">
+        <xsd:attribute name="title" type="xsd:string"/>
+        <xsd:attribute name="author" type="xsd:string"/>
+        <xsd:attribute name="publicationYear" type="xsd:gYear"/>
+    </xsd:complexType>
+
+    <xsd:element name="book" type="tns:bookType"/>
+
+    <xsd:complexType name="booksType">
+        <xsd:sequence>
+            <xsd:element ref="tns:book"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="books" type="tns:booksType"/>
+
+</xsd:schema>

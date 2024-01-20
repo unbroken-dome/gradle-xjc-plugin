@@ -1,11 +1,11 @@
 plugins {
     java
-    id("org.unbroken-dome.xjc") version "2.0.0"
+    id("org.unbroken-dome.xjc") version "2.2.0-SNAPSHOT"
 }
 
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 
@@ -15,5 +15,6 @@ xjc {
 
 
 dependencies {
+    // This is still needed for Gradle to compile the generated Java and add transitively
     implementation("javax.xml.bind:jaxb-api:2.2.12")
 }

@@ -108,3 +108,85 @@ xjc {
 }
 ----
 ====
+
+
+== @Generated annotation support
+
+XJC can provide support for standard plugin activated with `-mark-generated` to emit additional Java annotations
+in the generated source.
+
+The implementation of XJC will impact exactly which package the @Generated is from, with the 2 options being `javax.annotation.Generated` and `jakarta.annotation.Generated`.  In order to allow
+Gradle JavaC to compile the output code and for the project to export the correct transative dependency
+you need to include the appropiate annotation-api dependency.
+
+The configuration for `javax.annotation.Generated` might look like this:
+
+[source,groovy,role="primary"]
+.Groovy
+----
+xjc {
+    // Ensure we are using a javax.annotation.Generated era version
+    xjcVersion = '2.3'  // maybe this configuration item could be omitted
+}
+dependencies {
+    // This is still needed for Gradle to compile the generated Java and add transitive dependency to the project
+    implementation 'javax.annotation:javax-annotation-api:1.3.2'
+}
+sourceSets {
+    main {
+        xjcExtraArgs.addAll '-mark-generated'
+    }
+}
+----
+
+[source,kotlin,role="secondary"]
+.Kotlin
+----
+xjc {
+    // Ensure we are using a javax.annotation.Generated era version
+    xjcVersion.set("2.3")  // maybe this configuration item could be omitted
+}
+dependencies {
+    // This is still needed for Gradle to compile the generated Java and add transitive dependency to the project
+    implementation("javax.annotation:javax-annotation-api:1.3.2")
+}
+sourceSets.named("main") {
+    xjcExtraArgs.addAll("-mark-generated")
+}
+----
+
+The configuration for `jakarta.annotation.Generated` might look like this:
+
+[source,groovy,role="primary"]
+.Groovy
+----
+xjc {
+    // Ensure we are using a javax.annotation.Generated era version
+    xjcVersion = '3.0'  // maybe this configuration item could be omitted
+}
+dependencies {
+    // This is still needed for Gradle to compile the generated Java and add transitive dependency to the project
+    implementation 'jakarta.annotation:javax-annotation-api:1.3.5'
+}
+sourceSets {
+    main {
+        xjcExtraArgs.addAll '-mark-generated'
+    }
+}
+----
+
+[source,kotlin,role="secondary"]
+.Kotlin
+----
+xjc {
+    // Ensure we are using a javax.annotation.Generated era version
+    xjcVersion.set("3.0")  // maybe this configuration item could be omitted
+}
+dependencies {
+    // This is still needed for Gradle to compile the generated Java and add transitive dependency to the project
+    implementation("jakarta.annotation:javax-annotation-api:1.3.5")
+}
+sourceSets.named("main") {
+    xjcExtraArgs.addAll("-mark-generated")
+}
+----

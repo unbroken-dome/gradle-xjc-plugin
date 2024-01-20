@@ -1,11 +1,11 @@
 plugins {
     java
-    id("org.unbroken-dome.xjc") version "2.0.0"
+    id("org.unbroken-dome.xjc") version "2.2.0-SNAPSHOT"
 }
 
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 
@@ -15,6 +15,6 @@ xjc {
 
 
 dependencies {
-    // XJC 3.0 requires a different JAXB API artifact
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api:3.0.0-RC3")
+    // This is still needed for Gradle to compile the generated Java and add transitively
+    implementation("jakarta.xml.bind:jakarta.xml.bind-api:3.0.1")
 }

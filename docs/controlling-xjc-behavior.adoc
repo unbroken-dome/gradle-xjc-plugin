@@ -4,6 +4,8 @@ The link:https://docs.oracle.com/javase/8/docs/technotes/tools/unix/xjc.html[com
 a number of arguments to fine-tune the code generation. The XJC Gradle plugin supports many of these as properties
 which can be set in the build script.
 
+The link:https://eclipse-ee4j.github.io/jaxb-ri/3.0.0/docs/ch04.html#tools-xjc[Jakarta command line version] of XJC documentation.
+
 The following properties are available in the project-scoped `xjc` block, and apply to all XJC invocations
 (for all source sets):
 
@@ -13,15 +15,15 @@ The following properties are available in the project-scoped `xjc` block, and ap
 | `targetVersion` (`String`)
 | The version of the JAXB specification to target.
 | `-target`
-| (use latest version)
+| (use latest version supported by the XJC tool version in use)
 
-| `docLocale` (`java.util.Locale`)
+| `docLocale` (`String`)
 | The locale to be used when running XJC. This may influence the language of documentation comments in XJC-generated files.
 | (no equivalent)
 | JVM default locale
 
 | `encoding` (`String`)
-| The encoding for generated files.
+| The encoding for generated files.  This is supported by XJC 2.2 and later.
 | `-encoding` (non-standard)
 | `UTF-8`
 
@@ -73,6 +75,147 @@ The following property is available for each source set:
 | (not set)
 |===
 
+== JAXB Target Specification Version compatibility
+
+The version of JAXB and the version of XJC are not necessarily consistent.  The JAXB specification
+version follows the relevant JSR process while the XJC tool is updated in its maintenance lifecycle.
+
+The XJC -target option which is configured via `targetVersion` is the mechanism to use to override
+the default.  The following table is only known for the `com.sun.xml.bind` implementation of XJC.
+
+TIP: Some XJC tool versions may downgrade the default JAXB target (to 2.1) if they do not find a
+     2.2+ version of `javax.xml.bind:jaxb-api` on the XJC tool classpath.  For example if the `jaxb-api`
+     dependency is missing from the classpath because your configuration overrides plugin defaults.
+
+|===
+| XJC Tool Version | Default JAXB Spec Version | JAXB -target support | Package
+
+| 2.1 to 2.1.7
+| 2.1
+| 2.1, 2.0
+| javax
+
+| 2.1.8+
+| 2.2
+| 2.2, 2.1, 2.0
+| javax
+
+| 2.2
+| 2.2
+| 2.2, 2.1, 2.0
+| javax
+
+| 2.3
+| 2.2
+| 2.2, 2.1, 2.0
+| javax
+
+| 2.4
+| 2.2
+| 2.2, 2.1, 2.0
+| javax
+
+| 3.0
+| 3.0
+| 3.0, 2.3
+| jakarta
+
+| 4.0
+| 3.0
+| 3.0, 2.3
+| jakarta
+
+|===
+
+== JAXB Target Package compatibility
+
+This table maybe a useful reference.
+
+TIP: When expecting `jarkarta` package output, ensure to remove `javax.xml.bind:bind-api` from the XJC classpath.
+
+|===
+| XJC Tool Version | Default JAXB package | Supported package
+
+| 2.1 to 2.1.7
+| javax
+| javax
+
+| 2.1.8+
+| javax
+| javax
+
+| 2.2
+| javax
+| javax
+
+| 2.3
+| javax
+| javax
+
+| 2.4
+| javax
+| javax
+
+| 3.0
+| jakarta
+| jakarta (with -target 3.0) +
+  javax (with -target 2.3)
+
+
+| 4.0
+| jakarta
+| jakarta (with -target 3.0) +
+  javax (with -target 2.3)
+
+|===
+
+
+== XJC Tool runtime Java compatibility
+
+This table maybe a useful reference, this only concerns the standard `com.sun.xml.bind`
+implementation and the contents of the jaxb-xjc.jar itself.
+
+Inaccuracies may exist in this table, but it demonstrates some possible unexpected
+inconsistencies to look into when working with some versions of the XJC tool.
+
+
+|===
+| XJC Tool Version | Java Version
+
+| 2.1
+| Java SE 5
+
+| 2.2 to 2.2.5
+| Java SE 5
+
+| 2.2.6+
+| Java SE 6
+
+| 2.3.0-b170127.1453 and 2.3.0.1
+| Java SE 7 (JDK6+ com/sun/xml/dtdparser/*.class, no JDK9+ module-info.class provided but JDK9+ Options.class)
+
+| 2.3.0
+| Java SE 7 (JDK6+ com/sun/xml/dtdparser/*.class, no JDK9+ module-info.class provided but XJC2Task/CatalogUtil still provided)
+
+| 2.3.1
+| Java SE 7 (JDK9+ module-info.class provided)
+
+| 2.3.2
+| Java SE 7 (removed JDK9+ module-info.class but XJC2Task/CatalogUtil still provided)
+
+| 2.3.3+
+| Java SE 8 (JDK9+ module-info.class provided)
+
+| 2.4.x
+| Java SE 7 (JDK8+ com/sun/xml/dtdparser/*.class, JDK9+ module-info.class provided)
+
+| 3.x
+| Java SE 8 (JDK9+ module-info.class provided)
+
+| 4.x
+| Java SE 11
+
+|===
 
 == Configuring XJC with Gradle Project Properties
 

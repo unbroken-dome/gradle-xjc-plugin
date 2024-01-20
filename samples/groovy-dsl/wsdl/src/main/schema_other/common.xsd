@@ -1,0 +1,11 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:tns="http://unbroken-dome.org/gradle-xjc-plugin/samples/common"
+            targetNamespace="http://unbroken-dome.org/gradle-xjc-plugin/samples/common">
+
+    <xsd:complexType name="bookId">
+        <xsd:attribute name="isbn" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:element name="bookIsbn" type="tns:bookId"/>
+
+</xsd:schema>

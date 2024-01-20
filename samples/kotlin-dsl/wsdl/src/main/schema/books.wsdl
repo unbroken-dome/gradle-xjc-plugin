@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<wsdl:definitions
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+        xmlns:tns="http://unbroken-dome.org/gradle-xjc-plugin/samples/lookup/service"
+        xmlns:look="http://unbroken-dome.org/gradle-xjc-plugin/samples/lookup"
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+        xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+        name="BookLookupEndpointService"
+        targetNamespace="http://unbroken-dome.org/gradle-xjc-plugin/samples/lookup/service">
+
+
+    <wsdl:types>
+        <!-- the schema elements should be enumerated by XJC -->
+        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                   xmlns:look="http://unbroken-dome.org/gradle-xjc-plugin/samples/lookup"
+                   attributeFormDefault="unqualified"
+                   elementFormDefault="qualified"
+                   targetNamespace="http://unbroken-dome.org/gradle-xjc-plugin/samples/lookup/service"
+                   version="1.0">
+            <xsd:import namespace="http://unbroken-dome.org/gradle-xjc-plugin/samples/lookup" schemaLocation="lookup.xsd"/>
+        </xs:schema>
+    </wsdl:types>
+
+    <wsdl:message name="searchRequest">
+        <wsdl:part name="request" element="look:searchRequest"/>
+    </wsdl:message>
+
+    <wsdl:message name="searchResponse">
+        <wsdl:part name="result" element="look:searchResult"/>
+    </wsdl:message>
+
+    <wsdl:portType name="Search_PortType">
+        <wsdl:operation name="searchRequest">
+            <wsdl:input message="tns:searchRequest"/>
+            <wsdl:output message="tns:searchResponse"/>
+        </wsdl:operation>
+    </wsdl:portType>
+
+    <wsdl:binding name="Search_Binding" type="tns:Search_PortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="searchRequest">
+            <soap:operation soapAction="urn:searchAction"/>
+            <wsdl:input>
+                <soap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                           use="literal"
+                           />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                           use="literal"
+                           />
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+
+    <wsdl:service name="Search_Service">
+        <wsdl:documentation>WSDL File Sample for Search_Service</wsdl:documentation>
+        <wsdl:port name="Search_Port" binding="tns:Search_Binding">
+            <soap:address location="http://localhost/gradle-xjc-plugin/samples/wsdl-basic/Search_Service/"/>
+        </wsdl:port>
+    </wsdl:service>
+
+</wsdl:definitions>

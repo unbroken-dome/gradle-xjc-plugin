@@ -41,10 +41,29 @@ abstract class XjcGenerate
          * Used to select the correct WorkAction for a given JAXB spec version.
          */
         private val WorkActionClassNamesByVersion = mapOf(
+            "2.1" to "org.unbrokendome.gradle.plugins.xjc.work.xjc21.XjcGeneratorLegacyWorkAction",
             "2.2" to "org.unbrokendome.gradle.plugins.xjc.work.xjc22.XjcGeneratorWorkAction",
             "2.3" to "org.unbrokendome.gradle.plugins.xjc.work.xjc23.XjcGeneratorWorkAction",
-            "3.0" to "org.unbrokendome.gradle.plugins.xjc.work.xjc30.XjcGeneratorWorkAction"
+            "2.4" to "org.unbrokendome.gradle.plugins.xjc.work.xjc24.XjcGeneratorWorkAction",
+            "3.0" to "org.unbrokendome.gradle.plugins.xjc.work.xjc30.XjcGeneratorWorkAction",
+            "4.0" to "org.unbrokendome.gradle.plugins.xjc.work.xjc40.XjcGeneratorWorkAction"
         )
+        private val LEGACY_LATEST_SUPPORTED_VERSION = WorkActionClassNamesByVersion.entries
+            .filter { it.value.endsWith("LegacyWorkAction") }
+            .map { it.key }
+            .fold("") { acc, it -> if (acc > it) acc else it }  // .max() but supported by all kotlin versions
+        private val HIGHEST_SUPPORTED_VERSION = WorkActionClassNamesByVersion.keys
+            .fold("") { acc, it -> if (acc > it) acc else it }  // .max() but supported by all kotlin versions
+
+        init {
+            assert(LEGACY_LATEST_SUPPORTED_VERSION.isNotEmpty())
+            assert(HIGHEST_SUPPORTED_VERSION.isNotEmpty())
+        }
+
+        fun resolveArtifactsForMavenUri(configuration: Configuration): MutableList<SerializableResolvedArtifact> {
+            val artifacts = configuration.resolvedConfiguration.lenientConfiguration.artifacts
+            return artifacts.map { SerializableResolvedArtifact(it) }.toMutableList()
+        }
     }
 
 
@@ -110,8 +129,8 @@ abstract class XjcGenerate
     /**
      * A [Configuration] to be used for catalog resolution with the `maven:` URI scheme.
      */
-    @get:[InputFiles Optional Classpath]
-    abstract val catalogResolutionClasspath: Property<Configuration>
+    @get:[Input Optional]
+    abstract val catalogSerializableResolvedArtifact: ListProperty<SerializableResolvedArtifact>
 
 
     /**
@@ -164,6 +183,37 @@ abstract class XjcGenerate
     abstract val episodeOutputDirectory: DirectoryProperty
 
 
+    /**
+     * This setting exists to support newer versions of the XJC tool than the gradle plugin has been
+     *  tested with and officially supports as listed in the `xjcVersion` setting.
+     *
+     * This setting exists because doing this silently is probably not what all users would want by default.
+     * Without this setting configured the plugin will error informing you the XJC tool is newer than that
+     *  officially supported by the plugin and the existence of this setting provides a strategy that may
+     *  be able to resolve the build failure situation.
+     *
+     * This forces the documentation to be read and an administrative decision to be made for your
+     *  project concerning any risks for using unsupported XJC tooling versions in this way.
+     * If this setting is configured to something other than `default` you are advised to manually check
+     *  the generated output conforms to your expectations.
+     *
+     * If you wish the plugin to continue configure this setting to `auto-resolve`.
+     *
+     * Possible values might be:
+     *   `default` This will auto-detect XJC tool version and only allow supported versions to proceed.
+     *   `auto-resolve` This will behave as `default` first, if `default` fails then proceed using `latest`.
+     *     This strategy is anticipated to be the action most users want in the situation.
+     *   `latest` to use the strategy for the latest supported version.  As listed in `xjcVersion`.
+     *   `legacy-latest` to use the latest known legacy strategy as used for 2.1 XJC tools.
+     *   `2.3` would force a specific strategy of a specific XJC tool version.
+     *     Any string value also valid for `xjcVersion` is allowed, `2.3` is an example of one of those values.
+     *
+     * Default is `default`.
+     */
+    @get:[Input Optional]
+    abstract val xjcVersionUnsupportedStrategy: Property<String>
+
+
     init {
         setFromProjectProperties(project)
         generateEpisode.convention(false)
@@ -187,16 +237,7 @@ abstract class XjcGenerate
             return
         }
 
-        val toolManifest = toolClasspath.findManifests()
-            .singleOrNull { manifest ->
-                val bundleSymbolicName = manifest.mainAttributes[ManifestAttributes.BundleSymbolicName]
-                bundleSymbolicName == "com.sun.xml.bind.jaxb-xjc"
-            }
-            ?: throw IllegalStateException("Could not find a suitable XJC implementation on the tool classpath")
-
-        val xjcVersion = toolManifest.mainAttributes[ManifestAttributes.SpecificationVersion]
-        val workActionClassName = WorkActionClassNamesByVersion[xjcVersion]
-            ?: throw IllegalStateException("Cannot handle XJC version: $xjcVersion")
+        val workActionClassName = resolveXjcVersion()
 
         @Suppress("UNCHECKED_CAST")
         val workActionClass = Class.forName(workActionClassName)
@@ -211,6 +252,64 @@ abstract class XjcGenerate
             }
     }
 
+    private fun resolveXjcVersion(): String {
+        val toolManifest = toolClasspath.findManifests()
+            .singleOrNull { manifest ->
+                // pre XJC 2.3.x
+                val extensionName = manifest.mainAttributes[ManifestAttributes.ExtensionName]
+                // post XJC 2.3.0+
+                val bundleSymbolicName = manifest.mainAttributes[ManifestAttributes.BundleSymbolicName]
+                extensionName == "com.sun.tools.xjc" || bundleSymbolicName == "com.sun.xml.bind.jaxb-xjc"
+            }
+            ?: throw IllegalStateException("Could not find a suitable XJC implementation on the tool classpath, expecting: com.sun.xml.bind.jaxb-xjc")
+
+        val xjcVersionSpecificationVersion = sanitizeSpecificationVersion(toolManifest.mainAttributes[ManifestAttributes.SpecificationVersion]?.toString())
+        // Although this setting is called xjcVersionUnsupportedStrategy externally it is actually internally xjcVersionStrategy,
+        //  it is named as it is to better reflect to the target audience the correct level of concern when configuring it.
+        val xjcVersionStrategy = xjcVersionUnsupportedStrategy.get()
+
+        val isDefault = "default".equals(xjcVersionStrategy, true)
+        val isAutoResolve = "auto-resolve".equals(xjcVersionStrategy, true)
+
+        var xjcVersion: String?
+        if("latest".equals(xjcVersionStrategy, true))
+            xjcVersion = HIGHEST_SUPPORTED_VERSION
+        else if("legacy-latest".equals(xjcVersionStrategy, true))
+            xjcVersion = LEGACY_LATEST_SUPPORTED_VERSION
+        else if(!isDefault && !isAutoResolve && xjcVersionStrategy.isNotEmpty())
+            xjcVersion = xjcVersionStrategy
+        else    // "default" || "auto-resolve" || empty || null
+            xjcVersion = xjcVersionSpecificationVersion
+
+        val isSupported = WorkActionClassNamesByVersion[xjcVersionSpecificationVersion] != null
+        var resolvedWorkActionClassName = WorkActionClassNamesByVersion[xjcVersion]
+
+        if(resolvedWorkActionClassName == null && isAutoResolve)
+            resolvedWorkActionClassName = WorkActionClassNamesByVersion[HIGHEST_SUPPORTED_VERSION]
+
+        if(resolvedWorkActionClassName == null) {
+            val word = if(isDefault) "found" else "requested"
+            val msg = "Unsupported XJC version $word $xjcVersion consult documentation for setting " +
+                "xjcVersionUnsupportedStrategy='auto-resolve' to provide the plugin a strategy to continue"
+            throw IllegalStateException(msg)
+        }
+
+        if(!isDefault) {
+            logger.warn(
+                "xjcVersionUnsupportedStrategy is set {}, XJC tool version found {} this is {}supported, " +
+                        "using strategy for XJC tool version {}",
+                xjcVersionStrategy, xjcVersionSpecificationVersion,
+                (if (isSupported) "" else "un"),
+                xjcVersion
+            )
+        }
+
+        return resolvedWorkActionClassName
+    }
+
+    private fun sanitizeSpecificationVersion(s: String?): String? {
+        return s?.split(".")?.subList(0, 2)?.joinToString(".")    // "1.2.3-FOO" => "1.2"
+    }
 
     private fun cleanOutputDirs(): Boolean {
         val outputCleaned = outputDirectory.get().asFile.deleteAllContents()
@@ -235,12 +334,7 @@ abstract class XjcGenerate
         parameters.bindingFiles.setFrom(bindingFiles)
         parameters.pluginClasspath.setFrom(pluginClasspath)
         parameters.catalogFiles.setFrom(catalogs)
-        parameters.catalogResolvedArtifacts.set(
-            catalogResolutionClasspath.map { configuration ->
-                configuration.resolvedConfiguration.lenientConfiguration.artifacts
-                    .map { SerializableResolvedArtifact(it) }
-            }
-        )
+        parameters.catalogResolvedArtifacts.set(catalogSerializableResolvedArtifact)
         parameters.episodes.setFrom(episodes)
         parameters.targetPackage.set(targetPackage)
         parameters.encoding.set(encoding)
